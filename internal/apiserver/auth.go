@@ -25,10 +25,10 @@ import (
 
 const (
 	// APIServerAudience defines the value of jwt audience field.
-	APIServerAudience = "iam.api.marmotedu.com"
+	APIServerAudience = "llmops.api.marmotedu.com"
 
 	// APIServerIssuer defines the value of jwt issuer field.
-	APIServerIssuer = "iam-apiserver"
+	APIServerIssuer = "llmops-apiserver"
 )
 
 type loginInfo struct {

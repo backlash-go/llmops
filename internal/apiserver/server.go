@@ -36,7 +36,7 @@ type preparedAPIServer struct {
 	*apiServer
 }
 
-// ExtraConfig defines extra configuration for the iam-apiserver.
+// ExtraConfig defines extra configuration for the llmops-apiserver.
 type ExtraConfig struct {
 	Addr         string
 	MaxMsgSize   int
@@ -167,7 +167,7 @@ func buildGenericConfig(cfg *config.Config) (genericConfig *genericapiserver.Con
 	return
 }
 
-//nolint: unparam
+// nolint: unparam
 func buildExtraConfig(cfg *config.Config) (*ExtraConfig, error) {
 	return &ExtraConfig{
 		Addr:         fmt.Sprintf("%s:%d", cfg.GRPCOptions.BindAddress, cfg.GRPCOptions.BindPort),

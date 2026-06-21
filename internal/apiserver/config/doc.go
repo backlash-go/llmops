@@ -2,5 +2,5 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-// Package config defines configuration for iam-apiserver.
+// Package config defines configuration for llmops-apiserver.
 package config

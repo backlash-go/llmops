@@ -9,41 +9,10 @@ https://smart-auto.com/ai-platform/api/v1
 
 
 
-用户浏览器
-    │
-    ├─→ 前端: https://smart-auto.com/ai-platform
-    │       (React/Vue SPA)
-    │
-    ├─→ 后端: https://smart-auto.com/ai-platform/api/v1
-    │       (API Server)
-    │
-    └─→ Keycloak: https://<keycloak-domain>/realms/<realm>
-            (身份认证中心)
 
 
 
 
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   前端 SPA   │     │   后端 API   │     │   Keycloak   │
-└──────┬───────┘     └──────┬───────┘     └──────┬───────┘
-       │                     │                     │
-       │  1. 访问页面，检查token                    │
-       │─────────────────────────────────────────→│
-       │  2. 无token/过期 → 重定向到Keycloak登录    │
-       │                     │                     │
-       │  3. 如果已SSO登录过，Keycloak直接回调      │
-       │     (无需再次输入密码)                     │
-       │←─────────────────────────────────────────│
-       │  4. 携带 authorization_code               │
-       │                     │                     │
-       │  5. code换token ────→│                    │
-       │                     │─── code+secret ───→│
-       │                     │←── access_token ───│
-       │  6. 返回JWT token ←─│                    │
-       │                     │                     │
-       │  7. 后续请求携带token │                    │
-       │────────────────────→│  验证token签名      │
-       │                     │                     │
 
 
 
@@ -55,6 +24,154 @@ SSO 免登录：如果用户已在同一 Keycloak Realm 下的其他系统登录
 
 
 
+```
+
+1. 测试发现文档（无需登录）
+
+ 1007  curl https://keycloak.kuaifuinfo.com/realms/test-realm-1/.well-known/openid-configuration | jq
+ 
+2. 获取公钥（无需登录） 
+ 1008  curl https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/certs | jq
+
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/auth?client_id=grafana-oauth-kc&response_type=code&scope=openid%20email%20profile%20offline_access%20roles&state=abc123&redirect_uri=https://sgrafana.kuaifuinfo.com/login/generic_oauth
 
 
-            
+```
+
+3  认真成功 带着 code 请求  https://sgrafana.kuaifuinfo.com/login/generic_oauth 
+
+```
+https://sgrafana.kuaifuinfo.com/login/generic_oauth?session_state=c0e49a40-1a5e-48ff-9ae8-d7e3c8e9d6be&iss=https%3A%2F%2Fkeycloak.kuaifuinfo.com%2Frealms%2Ftest-realm-1&code=98281332-0fe3-46ad-bf0a-4b87604c54d2.c0e49a40-1a5e-48ff-9ae8-d7e3c8e9d6be.159d2e50-f23f-4c60-b61d-abed4f4b9eb1
+
+```
+
+####创建一个普通用户
+test-realm-user-1
+ahjKLjsj1Hl12
+
+4. 用 code 换 token（这是服务端第一件真正要做的事）
+
+```
+curl -X POST \
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/token \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "grant_type=authorization_code" \
+-d "client_id=grafana-oauth-kc" \
+-d "client_secret=VGQcAnAyL3kIB2z9v2hvojp2PcWKufwY" \
+-d "code=f537fd31-08d3-49d7-a52d-4718f97d8ce4.c0e49a40-1a5e-48ff-9ae8-d7e3c8e9d6be.24013730-8c4a-4508-85ec-3637dde737ed" \
+-d "redirect_uri=https://sgrafana.com/login/generic_oauth"
+```
+
+response
+
+```json
+{
+  "access_token":"eyJ...",
+  "refresh_token":"eyJ...",
+  "id_token":"eyJ..."
+}
+```
+
+
+5. 用 access_token 获取用户信息
+```shell
+ACCESS_TOKEN=eyJ....
+
+curl \
+-H "Authorization: Bearer $ACCESS_TOKEN" \
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/userinfo | jq
+
+```
+
+```json
+{
+  "sub":"...",
+  "preferred_username":"admin",
+  "email":"admin@test.com",
+  "name":"Administrator"
+}
+```
+
+
+6. 测试 refresh token
+
+
+```shell
+curl -X POST \
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/token \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "grant_type=refresh_token" \
+-d "client_id=ai-platform-oauth-kc" \
+-d "client_secret=xxx" \
+-d "refresh_token=xxx"
+
+```
+
+```json
+{
+  "access_token":"new",
+  "refresh_token":"new"
+}
+```
+
+
+
+
+
+
+repeat test
+
+
+```
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/auth
+?client_id=ai-platform
+&response_type=code
+&scope=openid email profile
+&redirect_uri=https://sgrafana.com/login/generic_oauth
+&state=abc123
+
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/auth?client_id=ai-platform&response_type=code&scope=openid%20email%20profile%20offline_access%20roles&redirect_uri=https://httpbin.org/get
+
+####创建一个普通用户
+test-realm-user-1
+ahjKLjsj1Hl12
+https://keycloak.kuaifuinfo.com/admin/test-realm-1/console/
+```
+
+```
+
+
+```
+
+
+```shell
+
+
+curl -X POST \
+https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/token \
+-H "Content-Type: application/x-www-form-urlencoded" \
+-d "grant_type=authorization_code" \
+-d "client_id=ai-platform" \
+-d "client_secret=cAAvlWPNXq031vzjEj077rdfeeJudxFy" \
+-d "code=62c0135f-f96c-42fc-bc23-41c776420293.50018b43-5e3c-48cb-b4e8-3e056ee78d46.24013730-8c4a-4508-85ec-3637dde737ed" \
+-d "redirect_uri=https://httpbin.org/get"
+
+```
+
+
+```
+expired time type session
+AUTH_SESSION_ID YTgzMzM3OGYtZWY5YS00MTEzLWFkYjAtYWFkODg2N2ZiNTYwLmJZV2xMY3BsRklmaFhvWlJjNVdCTmxfOVlHb3VCVUtUVi05SGNkZ2UxUzJESlZxaHUwaTdQMEJLTnJQdUpjNHVxWUNJRWlIUXdHWHdvU2V2bEE0a1VB
+expired time type session
+KEYCLOAK_IDENTITY eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIxOTc1MjZjOC0wYjMyLTQ0YWItOTQxMy0wYTZkYmI3ZTViNjAifQ.eyJleHAiOjE3ODE4OTU0MjksImlhdCI6MTc4MTg1OTQyOSwianRpIjoiMDQ2ZGQ0ZDktOTBkYy1lOWMyLWVjOWQtYmMyMTg4MmZiMjYwIiwiaXNzIjoiaHR0cHM6Ly9rZXljbG9hay5rdWFpZnVpbmZvLmNvbS9yZWFsbXMvbWFzdGVyIiwic3ViIjoiNzVkYWVkMDItODg2MS00NzA1LWFmNDItNGRhYzczNTU0MTFlIiwidHlwIjoiU2VyaWFsaXplZC1JRCIsInNpZCI6ImE4MzMzNzhmLWVmOWEtNDExMy1hZGIwLWFhZDg4NjdmYjU2MCIsInN0YXRlX2NoZWNrZXIiOiJxYVpFOTc2NTctZlFGSW5YN3RlYk9xclJZRWExdXdnTW5jOS1wQ0pzS0xRIn0.6-IdPI_GsXa1U9UmrcJDm8SeIC6B9N7OoZYru9GG3_QmocuX1K0dwNNTaIVUqKnhniqdmQxQ5fDDgSFmO-nPLw
+KEYCLOAK_SESSION gBL6BkfqSSWjpzatNbOtTG8FiCUjV6LKhs4c9AxwYLo    2026-06-19T20:40:14.965Z 
+```
+
+
+```
+curl -vk 
+-H 'Cookie: KEYCLOAK_SESSION=YmE0NGYwYjEtYmRkYy00YjNiLTk0NWQtYTEzNDdlZTQwMGQyLlFoVU1xM0tXTU0zUl84UnJFVlk4NGJTazZsY0hFWllxT2VqSU9DWjJXbXRFV2I1bVhfNDVSOTlrVHNTSEVmVkRKcWt2Sjl4NVlSSlNSdVJ3UjJRWTFn' 
+'https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/auth?client_id=ai-platform&response_type=code&scope=openid%20email%20profile%20offline_access%20roles&redirect_uri=https%3A%2F%2Fhttpbin.org%2Fget&state=test123&prompt=none'
+
+
+```

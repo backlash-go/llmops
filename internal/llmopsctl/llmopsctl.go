@@ -2,5 +2,9 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-// Package store defines the storage interface for llmops-apiserver.
-package store
+package llmopsctl
+
+const (
+	// TableWidth defines the table width for 'github.com/olekukonko/tablewriter'.
+	TableWidth = 50
+)

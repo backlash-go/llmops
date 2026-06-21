@@ -20,10 +20,10 @@ import (
 
 const (
 	// RecommendedHomeDir defines the default directory used to place all iam service configurations.
-	RecommendedHomeDir = ".iam"
+	RecommendedHomeDir = ".llmops"
 
 	// RecommendedEnvPrefix defines the ENV prefix used by all iam service.
-	RecommendedEnvPrefix = "IAM"
+	RecommendedEnvPrefix = "LLMOPS"
 )
 
 // Config is a structure used to configure a GenericAPIServer.

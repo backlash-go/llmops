@@ -17,9 +17,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Defines flag for iamctl.
+// Defines flag for llmopsctl.
 const (
-	FlagIAMConfig     = "iamconfig"
+	FlagIAMConfig     = "llmopsconfig"
 	FlagBearerToken   = "user.token"
 	FlagUsername      = "user.username"
 	FlagPassword      = "user.password"

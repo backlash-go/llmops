@@ -1,0 +1,38 @@
+
+
+对，你理解得基本正确。完整过程是：
+1. 浏览器访问 Grafana 登录
+2. Grafana 生成随机 state
+3. Grafana 把 state 相关信息存入浏览器的 Grafana 域 Cookie
+4. Grafana 通过 URL 参数把 state 带给 Keycloak
+5. Keycloak 在自己域下创建认证/SSO Cookie
+6. 登录成功后，Keycloak 把原 state 原样放进回调 URL
+7. Grafana 比较 URL state 与 Grafana 域下保存的 state
+比如：
+Grafana 设置：
+Set-Cookie: oauth_state=XYZ;
+Domain/Host: sgrafana.kuaifuinfo.com
+
+Grafana → Keycloak：
+https://keycloak.kuaifuinfo.com/.../auth?state=XYZ
+
+Keycloak 设置：
+Set-Cookie: AUTH_SESSION_ID=...
+Host: keycloak.kuaifuinfo.com
+
+Keycloak → Grafana：
+https://sgrafana.kuaifuinfo.com/login/generic_oauth
+?code=xxx&state=XYZ
+回调时浏览器请求 Grafana：
+GET /login/generic_oauth?code=xxx&state=XYZ
+Host: sgrafana.kuaifuinfo.com
+Cookie: oauth_state=XYZ; grafana_session=...
+Grafana随后验证：
+URL 中的 state == Grafana state Cookie 中的 state
+重点是：
+Keycloak不需要读取或保存 Grafana 的 state Cookie。
+Keycloak只把请求 URL 中的 state 临时关联到认证会话，并在回调 URL 中原样返回。
+Keycloak 的 Cookie 只发给 Keycloak 域。
+Grafana 的 Cookie 只发给 Grafana 域。
+浏览器根据当前请求域名，自动携带对应域的 Cookie。
+所以，state 是两个系统通过 URL 往返的关联值，而 Cookie 各自在自己的域下工作。
