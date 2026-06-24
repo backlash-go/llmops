@@ -13,14 +13,14 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	v1 "github.com/marmotedu/api/apiserver/v1"
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/spf13/viper"
 
-	"github.com/marmotedu/iam/internal/apiserver/store"
-	"github.com/marmotedu/iam/internal/pkg/middleware"
-	"github.com/marmotedu/iam/internal/pkg/middleware/auth"
-	"github.com/marmotedu/iam/pkg/log"
+	"llmops/internal/apiserver/store"
+	"llmops/internal/pkg/middleware"
+	"llmops/internal/pkg/middleware/auth"
+	"llmops/internal/pkg/model"
+	"llmops/pkg/log"
 )
 
 const (
@@ -44,12 +44,12 @@ func newBasicAuth() middleware.AuthStrategy {
 			return false
 		}
 
-		// Compare the login password with the user password.
-		if err := user.Compare(password); err != nil {
+		if user.Status != 1 {
 			return false
 		}
 
-		user.LoginedAt = time.Now()
+		now := time.Now()
+		user.LastLoginAt = &now
 		_ = store.Client().Users().Update(context.TODO(), user, metav1.UpdateOptions{})
 
 		return true
@@ -119,12 +119,12 @@ func authenticator() func(c *gin.Context) (interface{}, error) {
 			return "", jwt.ErrFailedAuthentication
 		}
 
-		// Compare the login password with the user password.
-		if err := user.Compare(login.Password); err != nil {
+		if user.Status != 1 {
 			return "", jwt.ErrFailedAuthentication
 		}
 
-		user.LoginedAt = time.Now()
+		now := time.Now()
+		user.LastLoginAt = &now
 		_ = store.Client().Users().Update(c, user, metav1.UpdateOptions{})
 
 		return user, nil
@@ -194,9 +194,9 @@ func payloadFunc() func(data interface{}) jwt.MapClaims {
 			"iss": APIServerIssuer,
 			"aud": APIServerAudience,
 		}
-		if u, ok := data.(*v1.User); ok {
-			claims[jwt.IdentityKey] = u.Name
-			claims["sub"] = u.Name
+		if u, ok := data.(*model.User); ok {
+			claims[jwt.IdentityKey] = u.Username
+			claims["sub"] = u.Username
 		}
 
 		return claims

@@ -8,21 +8,20 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	v1 "github.com/marmotedu/api/apiserver/v1"
-	"github.com/marmotedu/component-base/pkg/auth"
 	"github.com/marmotedu/component-base/pkg/core"
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/marmotedu/errors"
 
-	"github.com/marmotedu/iam/internal/pkg/code"
-	"github.com/marmotedu/iam/pkg/log"
+	"llmops/internal/pkg/code"
+	"llmops/internal/pkg/model"
+	"llmops/pkg/log"
 )
 
 // Create add new user to the storage.
 func (u *UserController) Create(c *gin.Context) {
 	log.L(c).Info("user create function called.")
 
-	var r v1.User
+	var r model.User
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		core.WriteResponse(c, errors.WithCode(code.ErrBind, err.Error()), nil)
@@ -30,15 +29,17 @@ func (u *UserController) Create(c *gin.Context) {
 		return
 	}
 
-	if errs := r.Validate(); len(errs) != 0 {
-		core.WriteResponse(c, errors.WithCode(code.ErrValidation, errs.ToAggregate().Error()), nil)
-
+	if r.Username == "" || r.Email == "" {
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, "username and email are required"), nil)
 		return
 	}
 
-	r.Password, _ = auth.Encrypt(r.Password)
-	r.Status = 1
-	r.LoginedAt = time.Now()
+	if r.Status == 0 {
+		r.Status = 1
+	}
+	now := time.Now()
+	r.CreatedAt = now
+	r.UpdatedAt = now
 
 	// Insert the user to the storage.
 	if err := u.srv.Users().Create(c, &r, metav1.CreateOptions{}); err != nil {

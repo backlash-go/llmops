@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
+	"llmops/internal/llmopsctl/util/templates"
 )
 
 var optionsExample = templates.Examples(`

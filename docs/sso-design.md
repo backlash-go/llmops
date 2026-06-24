@@ -41,7 +41,7 @@ https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/auth
 3  认真成功 带着 code 请求  https://sgrafana.kuaifuinfo.com/login/generic_oauth 
 
 ```
-https://sgrafana.kuaifuinfo.com/login/generic_oauth?session_state=c0e49a40-1a5e-48ff-9ae8-d7e3c8e9d6be&iss=https%3A%2F%2Fkeycloak.kuaifuinfo.com%2Frealms%2Ftest-realm-1&code=98281332-0fe3-46ad-bf0a-4b87604c54d2.c0e49a40-1a5e-48ff-9ae8-d7e3c8e9d6be.159d2e50-f23f-4c60-b61d-abed4f4b9eb1
+https://smart-auto.luxshare-ict.com/keycloak/realms/xmit-luxshare/protocol/openid-connect/auth?client_id=k8s-grafana-oauth&redirect_uri=https://smart-auto.luxshare-ict.com/grafana-k8s/login/generic_oauth&response_type=code&scope=openid profile email offline_access roles&state=2CFzzKHhWDPb5sU9zxxvuMwt2r-CQyigLj2mXRa6nSk=
 
 ```
 
@@ -53,13 +53,13 @@ ahjKLjsj1Hl12
 
 ```
 curl -X POST \
-https://keycloak.kuaifuinfo.com/realms/test-realm-1/protocol/openid-connect/token \
+https://smart-auto.luxshare-ict.com/keycloak/realms/xmit-luxshare/protocol/openid-connect/token \
 -H "Content-Type: application/x-www-form-urlencoded" \
 -d "grant_type=authorization_code" \
--d "client_id=grafana-oauth-kc" \
--d "client_secret=VGQcAnAyL3kIB2z9v2hvojp2PcWKufwY" \
--d "code=f537fd31-08d3-49d7-a52d-4718f97d8ce4.c0e49a40-1a5e-48ff-9ae8-d7e3c8e9d6be.24013730-8c4a-4508-85ec-3637dde737ed" \
--d "redirect_uri=https://sgrafana.com/login/generic_oauth"
+-d "client_id=k8s-grafana-oauth" \
+-d "client_secret=4rmxWEjvj5v8VsfmXulQ3IE4Hzja94dj" \
+-d "code=9565024b-6f33-db50-8f61-a557ca0e31eb.yeHHtq9iyZYJgB7WU8LrXosF.39ea55c9-478c-4607-a3fa-b4894b4324e1" \
+-d "redirect_uri=https://smart-auto.luxshare-ict.com/grafana-k8s/login/generic_oauth"
 ```
 
 response

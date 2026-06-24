@@ -12,10 +12,10 @@ import (
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/spf13/cobra"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/internal/pkg/middleware/auth"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/internal/pkg/middleware/auth"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 const (

@@ -4,7 +4,7 @@
 
 package config
 
-import "github.com/marmotedu/iam/internal/apiserver/options"
+import "llmops/internal/apiserver/options"
 
 // Config is the running configuration structure of the IAM pump service.
 type Config struct {

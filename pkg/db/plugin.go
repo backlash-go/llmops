@@ -9,7 +9,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/marmotedu/iam/pkg/log"
+	"llmops/pkg/log"
 )
 
 const (

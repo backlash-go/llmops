@@ -31,9 +31,9 @@ func validatePassword(fl validator.FieldLevel) bool {
 	return true
 }
 
-func init() {
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		_ = v.RegisterValidation("username", validateUsername)
-		_ = v.RegisterValidation("password", validatePassword)
-	}
-}
+// func init() {
+// 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+// 		_ = v.RegisterValidation("username", validateUsername)
+// 		_ = v.RegisterValidation("password", validatePassword)
+// 	}
+// }

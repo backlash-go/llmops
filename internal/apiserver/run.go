@@ -4,7 +4,7 @@
 
 package apiserver
 
-import "github.com/marmotedu/iam/internal/apiserver/config"
+import "llmops/internal/apiserver/config"
 
 // Run runs the specified APIServer. This should never exit.
 func Run(cfg *config.Config) error {

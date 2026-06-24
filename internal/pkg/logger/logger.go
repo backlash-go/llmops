@@ -16,7 +16,7 @@ import (
 
 	gormlogger "gorm.io/gorm/logger"
 
-	"github.com/marmotedu/iam/pkg/log"
+	"llmops/pkg/log"
 )
 
 // Define colors.

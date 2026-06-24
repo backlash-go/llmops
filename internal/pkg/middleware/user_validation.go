@@ -12,8 +12,8 @@ import (
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/marmotedu/errors"
 
-	"github.com/marmotedu/iam/internal/apiserver/store"
-	"github.com/marmotedu/iam/internal/pkg/code"
+	"llmops/internal/apiserver/store"
+	"llmops/internal/pkg/code"
 )
 
 // Validation make sure users have the right resource permission and operation.
@@ -21,17 +21,17 @@ func Validation() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := isAdmin(c); err != nil {
 			switch c.FullPath() {
-			case "/v1/users":
+			case "/api/v1/users":
 				if c.Request.Method != http.MethodPost {
 					core.WriteResponse(c, errors.WithCode(code.ErrPermissionDenied, ""), nil)
 					c.Abort()
 
 					return
 				}
-			case "/v1/users/:name", "/v1/users/:name/change_password":
+			case "/api/v1/users/:username", "/api/v1/users/:username/change_password":
 				username := c.GetString("username")
 				if c.Request.Method == http.MethodDelete ||
-					(c.Request.Method != http.MethodDelete && username != c.Param("name")) {
+					(c.Request.Method != http.MethodDelete && username != c.Param("username")) {
 					core.WriteResponse(c, errors.WithCode(code.ErrPermissionDenied, ""), nil)
 					c.Abort()
 
@@ -54,8 +54,8 @@ func isAdmin(c *gin.Context) error {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
 
-	if user.IsAdmin != 1 {
-		return errors.WithCode(code.ErrPermissionDenied, "user %s is not a administrator", username)
+	if user.Status != 1 {
+		return errors.WithCode(code.ErrPermissionDenied, "user %s is not active", username)
 	}
 
 	return nil

@@ -6,7 +6,7 @@ style: github
 template: CHANGELOG.tpl.md
 info:
   title: CHANGELOG
-  repository_url: https://github.com/marmotedu/iam
+  repository_url: https://llmops
 options:
   commits:
     filters:

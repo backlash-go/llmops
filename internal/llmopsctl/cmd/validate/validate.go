@@ -15,10 +15,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/marmotedu/iam/internal/llmopsctl"
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	"llmops/internal/llmopsctl"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 // ValidateOptions is an options struct to support 'validate' sub command.

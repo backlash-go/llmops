@@ -9,7 +9,7 @@ Installation
 
 To install run:
 
-	go get github.com/marmotedu/iam/pkg/shutdown
+	go get llmops/pkg/shutdown
 
 Example - posix signals
 
@@ -22,8 +22,8 @@ When callbacks return, the application will exit with os.Exit(0)
 		"fmt"
 		"time"
 
-		"github.com/marmotedu/iam/pkg/shutdown"
-		"github.com/marmotedu/iam/pkg/shutdown/shutdownmanagers/posixsignal"
+		"llmops/pkg/shutdown"
+		"llmops/pkg/shutdown/shutdownmanagers/posixsignal"
 	)
 
 	func main() {
@@ -63,8 +63,8 @@ error returned from ShutdownCallback.
 		"time"
 		"errors"
 
-		"github.com/marmotedu/iam/pkg/shutdown"
-		"github.com/marmotedu/iam/pkg/shutdown/shutdownmanagers/posixsignal"
+		"llmops/pkg/shutdown"
+		"llmops/pkg/shutdown/shutdownmanagers/posixsignal"
 	)
 
 	func main() {
@@ -114,9 +114,9 @@ message to correct instance via http on port 7999.
 		"fmt"
 		"time"
 
-		"github.com/marmotedu/iam/pkg/shutdown"
-		"github.com/marmotedu/iam/pkg/shutdown/shutdownmanagers/awsmanager"
-		"github.com/marmotedu/iam/pkg/shutdown/shutdownmanagers/posixsignal"
+		"llmops/pkg/shutdown"
+		"llmops/pkg/shutdown/shutdownmanagers/awsmanager"
+		"llmops/pkg/shutdown/shutdownmanagers/posixsignal"
 	)
 
 	func main() {

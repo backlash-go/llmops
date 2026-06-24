@@ -9,7 +9,7 @@ import (
 
 	"github.com/marmotedu/errors"
 
-	"github.com/marmotedu/iam/internal/pkg/code"
+	"llmops/internal/pkg/code"
 )
 
 func main() {

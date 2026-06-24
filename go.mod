@@ -1,4 +1,4 @@
-module github.com/marmotedu/iam
+module llmops
 
 go 1.21.4
 

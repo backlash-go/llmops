@@ -12,10 +12,11 @@ import (
 	"github.com/marmotedu/errors"
 	"gorm.io/gorm"
 
-	"github.com/marmotedu/iam/internal/apiserver/store"
-	"github.com/marmotedu/iam/internal/pkg/logger"
-	genericoptions "github.com/marmotedu/iam/internal/pkg/options"
-	"github.com/marmotedu/iam/pkg/db"
+	"llmops/internal/apiserver/store"
+	"llmops/internal/pkg/logger"
+	"llmops/internal/pkg/model"
+	genericoptions "llmops/internal/pkg/options"
+	"llmops/pkg/db"
 )
 
 type datastore struct {
@@ -95,7 +96,7 @@ func GetMySQLFactoryOr(opts *genericoptions.MySQLOptions) (store.Factory, error)
 // cleanDatabase tear downs the database tables.
 // nolint:unused // may be reused in the feature, or just show a migrate usage.
 func cleanDatabase(db *gorm.DB) error {
-	if err := db.Migrator().DropTable(&v1.User{}); err != nil {
+	if err := db.Migrator().DropTable(&model.User{}, &model.UserIdentity{}); err != nil {
 		return errors.Wrap(err, "drop user table failed")
 	}
 	if err := db.Migrator().DropTable(&v1.Policy{}); err != nil {
@@ -112,7 +113,7 @@ func cleanDatabase(db *gorm.DB) error {
 // won't delete/change current data.
 // nolint:unused // may be reused in the feature, or just show a migrate usage.
 func migrateDatabase(db *gorm.DB) error {
-	if err := db.AutoMigrate(&v1.User{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.UserIdentity{}); err != nil {
 		return errors.Wrap(err, "migrate user model failed")
 	}
 	if err := db.AutoMigrate(&v1.Policy{}); err != nil {

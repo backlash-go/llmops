@@ -12,8 +12,8 @@ import (
 	"github.com/marmotedu/component-base/pkg/core"
 	"github.com/marmotedu/errors"
 
-	"github.com/marmotedu/iam/internal/pkg/code"
-	"github.com/marmotedu/iam/internal/pkg/middleware"
+	"llmops/internal/pkg/code"
+	"llmops/internal/pkg/middleware"
 )
 
 // BasicStrategy defines Basic authentication strategy.

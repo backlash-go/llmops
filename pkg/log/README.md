@@ -25,7 +25,7 @@
 package main
 
 import (
-    "github.com/marmotedu/iam/pkg/log"
+    "llmops/pkg/log"
 )
 
 func main() {
@@ -104,7 +104,7 @@ log.Info 这类函数需要指定具体的类型，以最大化的 提高日志�
 package main
 
 import (
-    "github.com/marmotedu/iam/pkg/log"
+    "llmops/pkg/log"
 )
 
 func main() {

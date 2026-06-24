@@ -9,7 +9,7 @@ import (
 	"github.com/marmotedu/component-base/pkg/core"
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 
-	"github.com/marmotedu/iam/pkg/log"
+	"llmops/pkg/log"
 )
 
 // DeleteCollection batch delete users by multiple usernames.
@@ -17,7 +17,7 @@ import (
 func (u *UserController) DeleteCollection(c *gin.Context) {
 	log.L(c).Info("batch delete user function called.")
 
-	usernames := c.QueryArray("name")
+	usernames := c.QueryArray("username")
 
 	if err := u.srv.Users().DeleteCollection(c, usernames, metav1.DeleteOptions{}); err != nil {
 		core.WriteResponse(c, err, nil)

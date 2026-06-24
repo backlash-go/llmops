@@ -8,9 +8,9 @@ package set
 import (
 	"github.com/spf13/cobra"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 var setLong = templates.LongDesc(`

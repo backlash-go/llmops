@@ -18,9 +18,9 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 const (
@@ -62,9 +62,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 const (
@@ -203,9 +203,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 const maxStringLength = 17
@@ -255,9 +255,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 const (
@@ -392,9 +392,9 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
-	"github.com/marmotedu/iam/pkg/cli/genericclioptions"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
+	"llmops/pkg/cli/genericclioptions"
 )
 
 // SubCmd2Options is an options struct to support subcmd2 subcommands.

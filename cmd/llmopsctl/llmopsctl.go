@@ -8,7 +8,7 @@ package main
 import (
 	"os"
 
-	"github.com/marmotedu/iam/internal/llmopsctl/cmd"
+	"llmops/internal/llmopsctl/cmd"
 )
 
 func main() {

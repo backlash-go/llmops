@@ -11,8 +11,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	cmdutil "github.com/marmotedu/iam/internal/llmopsctl/cmd/util"
-	"github.com/marmotedu/iam/internal/llmopsctl/util/templates"
+	cmdutil "llmops/internal/llmopsctl/cmd/util"
+	"llmops/internal/llmopsctl/util/templates"
 )
 
 const defaultBoilerPlate = `
@@ -29,7 +29,7 @@ var (
 		the .bash_profile.
 
 		Detailed instructions on how to do this are available here:
-		http://github.com/marmotedu/iam/docs/installation/iamctl.md#enabling-shell-autocompletion
+		http://llmops/docs/installation/iamctl.md#enabling-shell-autocompletion
 
 		Note for zsh users: [1] zsh completions are only supported in versions of zsh >= 5.2`)
 

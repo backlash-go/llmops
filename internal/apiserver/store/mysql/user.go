@@ -7,14 +7,14 @@ package mysql
 import (
 	"context"
 
-	v1 "github.com/marmotedu/api/apiserver/v1"
 	"github.com/marmotedu/component-base/pkg/fields"
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/marmotedu/errors"
 	gorm "gorm.io/gorm"
 
-	"github.com/marmotedu/iam/internal/pkg/code"
-	"github.com/marmotedu/iam/internal/pkg/util/gormutil"
+	"llmops/internal/pkg/code"
+	"llmops/internal/pkg/model"
+	"llmops/internal/pkg/util/gormutil"
 )
 
 type users struct {
@@ -26,12 +26,12 @@ func newUsers(ds *datastore) *users {
 }
 
 // Create creates a new user account.
-func (u *users) Create(ctx context.Context, user *v1.User, opts metav1.CreateOptions) error {
-	return u.db.Create(&user).Error
+func (u *users) Create(ctx context.Context, user *model.User, opts metav1.CreateOptions) error {
+	return u.db.Create(user).Error
 }
 
 // Update updates an user account information.
-func (u *users) Update(ctx context.Context, user *v1.User, opts metav1.UpdateOptions) error {
+func (u *users) Update(ctx context.Context, user *model.User, opts metav1.UpdateOptions) error {
 	return u.db.Save(user).Error
 }
 
@@ -47,7 +47,7 @@ func (u *users) Delete(ctx context.Context, username string, opts metav1.DeleteO
 		u.db = u.db.Unscoped()
 	}
 
-	err := u.db.Where("name = ?", username).Delete(&v1.User{}).Error
+	err := u.db.Where("username = ?", username).Delete(&model.User{}).Error
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}
@@ -67,13 +67,13 @@ func (u *users) DeleteCollection(ctx context.Context, usernames []string, opts m
 		u.db = u.db.Unscoped()
 	}
 
-	return u.db.Where("name in (?)", usernames).Delete(&v1.User{}).Error
+	return u.db.Where("username in (?)", usernames).Delete(&model.User{}).Error
 }
 
 // Get return an user by the user identifier.
-func (u *users) Get(ctx context.Context, username string, opts metav1.GetOptions) (*v1.User, error) {
-	user := &v1.User{}
-	err := u.db.Where("name = ? and status = 1", username).First(&user).Error
+func (u *users) Get(ctx context.Context, username string, opts metav1.GetOptions) (*model.User, error) {
+	user := &model.User{}
+	err := u.db.Where("username = ? and status = 1", username).First(user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.WithCode(code.ErrUserNotFound, err.Error())
@@ -86,13 +86,13 @@ func (u *users) Get(ctx context.Context, username string, opts metav1.GetOptions
 }
 
 // List return all users.
-func (u *users) List(ctx context.Context, opts metav1.ListOptions) (*v1.UserList, error) {
-	ret := &v1.UserList{}
+func (u *users) List(ctx context.Context, opts metav1.ListOptions) (*model.UserList, error) {
+	ret := &model.UserList{}
 	ol := gormutil.Unpointer(opts.Offset, opts.Limit)
 
 	selector, _ := fields.ParseSelector(opts.FieldSelector)
-	username, _ := selector.RequiresExactMatch("name")
-	d := u.db.Where("name like ? and status = 1", "%"+username+"%").
+	username, _ := selector.RequiresExactMatch("username")
+	d := u.db.Where("username like ? and status = 1", "%"+username+"%").
 		Offset(ol.Offset).
 		Limit(ol.Limit).
 		Order("id desc").
@@ -105,22 +105,18 @@ func (u *users) List(ctx context.Context, opts metav1.ListOptions) (*v1.UserList
 }
 
 // ListOptional show a more graceful query method.
-func (u *users) ListOptional(ctx context.Context, opts metav1.ListOptions) (*v1.UserList, error) {
-	ret := &v1.UserList{}
+func (u *users) ListOptional(ctx context.Context, opts metav1.ListOptions) (*model.UserList, error) {
+	ret := &model.UserList{}
 	ol := gormutil.Unpointer(opts.Offset, opts.Limit)
 
-	where := v1.User{}
-	whereNot := v1.User{
-		IsAdmin: 0,
-	}
+	where := model.User{}
 	selector, _ := fields.ParseSelector(opts.FieldSelector)
-	username, found := selector.RequiresExactMatch("name")
+	username, found := selector.RequiresExactMatch("username")
 	if found {
-		where.Name = username
+		where.Username = username
 	}
 
 	d := u.db.Where(where).
-		Not(whereNot).
 		Offset(ol.Offset).
 		Limit(ol.Limit).
 		Order("id desc").

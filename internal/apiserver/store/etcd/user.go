@@ -8,11 +8,12 @@ import (
 	"context"
 	"fmt"
 
-	v1 "github.com/marmotedu/api/apiserver/v1"
 	"github.com/marmotedu/component-base/pkg/json"
 	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/marmotedu/component-base/pkg/util/jsonutil"
 	"github.com/marmotedu/errors"
+
+	"llmops/internal/pkg/model"
 )
 
 type users struct {
@@ -30,13 +31,13 @@ func (u *users) getKey(name string) string {
 }
 
 // Create creates a new user account.
-func (u *users) Create(ctx context.Context, user *v1.User, opts metav1.CreateOptions) error {
-	return u.ds.Put(ctx, u.getKey(user.Name), jsonutil.ToString(user))
+func (u *users) Create(ctx context.Context, user *model.User, opts metav1.CreateOptions) error {
+	return u.ds.Put(ctx, u.getKey(user.Username), jsonutil.ToString(user))
 }
 
 // Update updates an user account information.
-func (u *users) Update(ctx context.Context, user *v1.User, opts metav1.UpdateOptions) error {
-	return u.ds.Put(ctx, u.getKey(user.Name), jsonutil.ToString(user))
+func (u *users) Update(ctx context.Context, user *model.User, opts metav1.UpdateOptions) error {
+	return u.ds.Put(ctx, u.getKey(user.Username), jsonutil.ToString(user))
 }
 
 // Delete deletes the user by the user identifier.
@@ -63,13 +64,13 @@ func (u *users) DeleteCollection(ctx context.Context, usernames []string, opts m
 }
 
 // Get return an user by the user identifier.
-func (u *users) Get(ctx context.Context, username string, opts metav1.GetOptions) (*v1.User, error) {
+func (u *users) Get(ctx context.Context, username string, opts metav1.GetOptions) (*model.User, error) {
 	resp, err := u.ds.Get(ctx, u.getKey(username))
 	if err != nil {
 		return nil, err
 	}
 
-	var user v1.User
+	var user model.User
 	if err := json.Unmarshal(resp, &user); err != nil {
 		return nil, errors.Wrap(err, "unmarshal to User struct failed")
 	}
@@ -78,20 +79,20 @@ func (u *users) Get(ctx context.Context, username string, opts metav1.GetOptions
 }
 
 // List return all users.
-func (u *users) List(ctx context.Context, opts metav1.ListOptions) (*v1.UserList, error) {
+func (u *users) List(ctx context.Context, opts metav1.ListOptions) (*model.UserList, error) {
 	kvs, err := u.ds.List(ctx, u.getKey(""))
 	if err != nil {
 		return nil, err
 	}
 
-	ret := &v1.UserList{
+	ret := &model.UserList{
 		ListMeta: metav1.ListMeta{
 			TotalCount: int64(len(kvs)),
 		},
 	}
 
 	for _, v := range kvs {
-		var user v1.User
+		var user model.User
 		if err := json.Unmarshal(v.Value, &user); err != nil {
 			return nil, errors.Wrap(err, "unmarshal to User struct failed")
 		}

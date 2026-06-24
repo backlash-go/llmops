@@ -14,7 +14,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/marmotedu/iam/pkg/shutdown"
+	"llmops/pkg/shutdown"
 )
 
 // Name defines shutdown manager name.
