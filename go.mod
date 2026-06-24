@@ -18,6 +18,7 @@ require (
 	github.com/go-redis/redis/v7 v7.4.1
 	github.com/golang/mock v1.6.0
 	github.com/gosuri/uitable v0.0.4
+	github.com/jinzhu/copier v0.4.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/jinzhu/now v1.1.3
 	github.com/likexian/host-stat-go v0.0.0-20190516151207-c9cf36dd6ce9

@@ -28,6 +28,7 @@ import (
 type apiServer struct {
 	gs               *shutdown.GracefulShutdown
 	redisOptions     *genericoptions.RedisOptions
+	oauthOptions     *genericoptions.OAuthOptions
 	gRPCAPIServer    *grpcAPIServer
 	genericAPIServer *genericapiserver.GenericAPIServer
 }
@@ -71,6 +72,7 @@ func createAPIServer(cfg *config.Config) (*apiServer, error) {
 	server := &apiServer{
 		gs:               gs,
 		redisOptions:     cfg.RedisOptions,
+		oauthOptions:     cfg.OAuthOptions,
 		genericAPIServer: genericServer,
 		gRPCAPIServer:    extraServer,
 	}
@@ -79,7 +81,7 @@ func createAPIServer(cfg *config.Config) (*apiServer, error) {
 }
 
 func (s *apiServer) PrepareRun() preparedAPIServer {
-	initRouter(s.genericAPIServer.Engine)
+	initRouter(s.genericAPIServer.Engine, s.oauthOptions)
 
 	s.initRedisStore()
 

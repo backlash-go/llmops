@@ -1,15 +1,31 @@
 package v1
 
-import "time"
+import "llmops/internal/pkg/model"
 
-type CreateUserInfoRequest struct {
-	Username    string     `json:"username" validate:"required"`
-	Email       string     `json:"email" validate:"required"`
-	Password    string     `json:"password" validate:"required,min=8,max=32"`
-	FirstName   string     `json:"first_name"`
-	LastName    string     `json:"last_name"`
-	Avatar      string     `json:"avatar"`
-	Status      uint8      `json:"status"`
-	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
+type CreateUserRequest struct {
+	Username  string `json:"username" binding:"required"`
+	Email     string `json:"email" binding:"required,email"`
+	Password  string `json:"password" binding:"required,min=8,max=32"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Avatar    string `json:"avatar"`
 }
 
+type UpdateUserRequest struct{}
+
+type GetUserRequest struct {
+}
+
+type DeleteCollectionUserRequest struct {
+}
+
+type ListUserRequest struct {
+}
+
+type ChangeUserPasswordRequest struct {
+}
+
+type ListUserResponse struct {
+	TotalCount int64         `json:"totalCount"`
+	Users      []*model.User `json:"users"`
+}

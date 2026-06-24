@@ -59,6 +59,15 @@ redis:
   #use-ssl: # 是否启用 TLS
   #ssl-insecure-skip-verify: # 当连接 redis 时允许使用自签名证书
 
+# Keycloak / OpenID Connect 登录配置
+oauth:
+  authorization-endpoint: https://keycloak.example.com/realms/example/protocol/openid-connect/auth
+  client-id: llmops
+  redirect-uri: https://llmops.example.com/ops/login/generic_oauth
+  scopes: openid,profile,email
+  state-ttl: 5m
+  cookie-secure: true # 本地 HTTP 调试时改为 false
+
 # JWT 配置
 jwt:
   realm: JWT # jwt 标识

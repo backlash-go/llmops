@@ -175,3 +175,19 @@ curl -vk
 
 
 ```
+
+
+```
+
+第一次请求登录接口
+→ 后端生成随机 state
+→ 将 state 写入浏览器 Cookie
+→ 同时放入 Keycloak 授权 URL
+→ 返回 302 跳转 Keycloak
+
+Keycloak 登录成功
+→ 302 回调你的同一个接口
+→ URL 带回 code 和 state
+→ 浏览器自动携带之前保存的 state Cookie
+→ 后端比较 URL state 和 Cookie state
+```

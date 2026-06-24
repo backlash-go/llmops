@@ -5,15 +5,12 @@
 package user
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/marmotedu/component-base/pkg/core"
-	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/marmotedu/errors"
+	v1 "llmops/pkg/api/llmops/v1"
 
 	"llmops/internal/pkg/code"
-	"llmops/internal/pkg/model"
 	"llmops/pkg/log"
 )
 
@@ -21,7 +18,7 @@ import (
 func (u *UserController) Create(c *gin.Context) {
 	log.L(c).Info("user create function called.")
 
-	var r model.User
+	var r v1.CreateUserRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
 		core.WriteResponse(c, errors.WithCode(code.ErrBind, err.Error()), nil)
@@ -34,15 +31,8 @@ func (u *UserController) Create(c *gin.Context) {
 		return
 	}
 
-	if r.Status == 0 {
-		r.Status = 1
-	}
-	now := time.Now()
-	r.CreatedAt = now
-	r.UpdatedAt = now
-
 	// Insert the user to the storage.
-	if err := u.srv.Users().Create(c, &r, metav1.CreateOptions{}); err != nil {
+	if err := u.srv.Users().Create(c, &r); err != nil {
 		core.WriteResponse(c, err, nil)
 
 		return

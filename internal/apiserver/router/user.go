@@ -8,14 +8,11 @@ import (
 	"llmops/internal/apiserver/store"
 )
 
-func RegisterUserRoutes(g *gin.Engine, store store.Factory, v *gin.RouterGroup) {
+func RegisterUserRoutes(store store.Factory, v *gin.RouterGroup) {
 	userController := userv1.NewUserController(store)
+
 	users := v.Group("/users")
 
 	users.POST("", userController.Create)
-	users.GET("", userController.List)
-	users.POST("/batch-delete", userController.DeleteCollection)
-	users.GET("/:username", userController.Get)
-	users.PUT("/:username", userController.Update)
-	users.PUT("/:username/change_password", userController.ChangePassword)
+
 }

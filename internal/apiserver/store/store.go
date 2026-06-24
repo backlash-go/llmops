@@ -4,16 +4,16 @@
 
 package store
 
+import "llmops/internal/apiserver/store/mysql"
+
 //go:generate mockgen -self_package=llmops/internal/apiserver/store -destination mock_store.go -package store llmops/internal/apiserver/store Factory,UserStore,SecretStore,PolicyStore
 
 var client Factory
 
 // Factory defines the iam platform storage interface.
 type Factory interface {
-	Users() UserStore
-	Secrets() SecretStore
-	Policies() PolicyStore
-	PolicyAudits() PolicyAuditStore
+	Users() mysql.UserStore
+
 	Close() error
 }
 

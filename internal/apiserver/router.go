@@ -11,6 +11,7 @@ import (
 
 	"llmops/internal/apiserver/store/mysql"
 	"llmops/internal/pkg/code"
+	genericoptions "llmops/internal/pkg/options"
 
 	"llmops/internal/apiserver/router"
 
@@ -18,15 +19,15 @@ import (
 	_ "llmops/pkg/validator"
 )
 
-func initRouter(g *gin.Engine) {
+func initRouter(g *gin.Engine, oauthOptions *genericoptions.OAuthOptions) {
 	installMiddleware(g)
-	installController(g)
+	installController(g, oauthOptions)
 }
 
 func installMiddleware(g *gin.Engine) {
 }
 
-func installController(g *gin.Engine) *gin.Engine {
+func installController(g *gin.Engine, oauthOptions *genericoptions.OAuthOptions) *gin.Engine {
 	// Middlewares.
 
 	g.NoRoute(func(c *gin.Context) {
@@ -36,9 +37,11 @@ func installController(g *gin.Engine) *gin.Engine {
 	// v1 handlers, requiring authentication
 	storeIns, _ := mysql.GetMySQLFactoryOr(nil)
 
-	v1 := g.Group("/api/v1")
+	router.RegisterLoginRoutes(oauthOptions, g)
 
-	router.RegisterUserRoutes(g, storeIns, v1)
+	v1 := g.Group("/ops/api/v1")
+
+	router.RegisterUserRoutes(storeIns, v1)
 
 	return g
 }
