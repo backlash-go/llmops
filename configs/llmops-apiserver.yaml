@@ -5,10 +5,12 @@
 # llmops-apiserver 全配置
 
 # RESTful 服务配置
+#     middlewares: recovery,logger,secure,nocache,cors,dump # 加载的 gin 中间件列表，多个中间件，逗号(,)隔开
+
 server:
     mode: debug # server mode: release, debug, test，默认 release
     healthz: true # 是否开启健康检查，如果开启会安装 /healthz 路由，默认 true
-    middlewares: recovery,logger,secure,nocache,cors,dump # 加载的 gin 中间件列表，多个中间件，逗号(,)隔开
+    middlewares: recovery,logger,cors # 加载的 gin 中间件列表，多个中间件，逗号(,)隔开
     max-ping-count: 3 # http 服务启动后，自检尝试次数，默认 3
 
 # GRPC 服务配置
@@ -61,12 +63,13 @@ redis:
 
 # Keycloak / OpenID Connect 登录配置
 oauth:
-  authorization-endpoint: https://keycloak.example.com/realms/example/protocol/openid-connect/auth
-  client-id: llmops
-  redirect-uri: https://llmops.example.com/ops/login/generic_oauth
-  scopes: openid,profile,email
+  authorization-endpoint: https://smart-auto.luxshare-ict.com/keycloak/realms/xmit-luxshare/protocol/openid-connect/auth
+  client-id: xmit-llmops
+  client-secret: "P3V4iDzBXvi7qNuIe0LDFyxHVfMQd9VD" # confidential client 填写；public client 保持空
+  redirect-uri: http://127.0.0.1:8080/ops/login/generic_oauth
+  scopes: openid,profile,email,roles
   state-ttl: 5m
-  cookie-secure: true # 本地 HTTP 调试时改为 false
+  cookie-secure: false # 本地 HTTP 调试时改为 false true
 
 # JWT 配置
 jwt:
@@ -79,7 +82,7 @@ log:
     name: apiserver # Logger的名字
     development: true # 是否是开发模式。如果是开发模式，会对DPanicLevel进行堆栈跟踪。
     level: debug # 日志级别，优先级从低到高依次为：debug, info, warn, error, dpanic, panic, fatal。
-    format: console # 支持的日志输出格式，目前支持console和json两种。console其实就是text格式。
+    format: json # 支持的日志输出格式，目前支持console和json两种。console其实就是text格式。
     enable-color: true # 是否开启颜色输出，true:是，false:否
     disable-caller: false # 是否开启 caller，如果开启会在日志中显示调用日志所在的文件、函数和行号
     disable-stacktrace: false # 是否再panic及以上级别禁止打印堆栈信息

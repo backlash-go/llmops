@@ -11,8 +11,10 @@ import (
 
 	"llmops/internal/apiserver/store/mysql"
 	"llmops/internal/pkg/code"
+	genericoptions "llmops/internal/pkg/options"
 
 	"llmops/internal/apiserver/router"
+
 
 	// custom gin validators.
 	_ "llmops/pkg/validator"
@@ -22,6 +24,8 @@ func initRouter(g *gin.Engine) {
 	installMiddleware(g)
 	installController(g)
 }
+
+
 
 func installMiddleware(g *gin.Engine) {
 }
@@ -33,14 +37,10 @@ func installController(g *gin.Engine) *gin.Engine {
 		core.WriteResponse(c, errors.WithCode(code.ErrPageNotFound, "Page not found."), nil)
 	})
 
-	g.GET("/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{"method": "GET"})
-	})
-
 	// v1 handlers, requiring authentication
 	storeIns, _ := mysql.GetMySQLFactoryOr(nil)
 
-	router.RegisterLoginRoutes(storeIns, g)
+	router.RegisterLoginRoutes(g)
 
 	v1 := g.Group("/ops/api/v1")
 

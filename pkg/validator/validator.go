@@ -6,7 +6,7 @@
 package validator
 
 import (
-	"github.com/gin-gonic/gin/binding"
+	// "github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/marmotedu/component-base/pkg/validation"
 )

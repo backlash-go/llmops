@@ -5,7 +5,6 @@
 package apiserver
 
 import (
-	"context"
 	"encoding/base64"
 	"net/http"
 	"strings"
@@ -13,10 +12,8 @@ import (
 
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/spf13/viper"
 
-	"llmops/internal/apiserver/store"
 	"llmops/internal/pkg/middleware"
 	"llmops/internal/pkg/middleware/auth"
 	"llmops/internal/pkg/model"
@@ -38,19 +35,19 @@ type loginInfo struct {
 
 func newBasicAuth() middleware.AuthStrategy {
 	return auth.NewBasicStrategy(func(username string, password string) bool {
-		// fetch user from database
-		user, err := store.Client().Users().Get(context.TODO(), username, metav1.GetOptions{})
-		if err != nil {
-			return false
-		}
+		// // fetch user from database
+		// user, err := store.Client().Users().Get(context.TODO(), username, metav1.GetOptions{})
+		// if err != nil {
+		// 	return false
+		// }
 
-		if user.Status != 1 {
-			return false
-		}
+		// if user.Status != 1 {
+		// 	return false
+		// }
 
-		now := time.Now()
-		user.LastLoginAt = &now
-		_ = store.Client().Users().Update(context.TODO(), user, metav1.UpdateOptions{})
+		// now := time.Now()
+		// user.LastLoginAt = &now
+		// _ = store.Client().Users().Update(context.TODO(), user, metav1.UpdateOptions{})
 
 		return true
 	})
@@ -98,36 +95,36 @@ func newAutoAuth() middleware.AuthStrategy {
 
 func authenticator() func(c *gin.Context) (interface{}, error) {
 	return func(c *gin.Context) (interface{}, error) {
-		var login loginInfo
-		var err error
+		// var login loginInfo
+		// var err error
 
-		// support header and body both
-		if c.Request.Header.Get("Authorization") != "" {
-			login, err = parseWithHeader(c)
-		} else {
-			login, err = parseWithBody(c)
-		}
-		if err != nil {
-			return "", jwt.ErrFailedAuthentication
-		}
+		// // support header and body both
+		// if c.Request.Header.Get("Authorization") != "" {
+		// 	login, err = parseWithHeader(c)
+		// } else {
+		// 	login, err = parseWithBody(c)
+		// }
+		// if err != nil {
+		// 	return "", jwt.ErrFailedAuthentication
+		// }
 
-		// Get the user information by the login username.
-		user, err := store.Client().Users().Get(c, login.Username, metav1.GetOptions{})
-		if err != nil {
-			log.Errorf("get user information failed: %s", err.Error())
+		// // Get the user information by the login username.
+		// user, err := store.Client().Users().Get(c, login.Username, metav1.GetOptions{})
+		// if err != nil {
+		// 	log.Errorf("get user information failed: %s", err.Error())
 
-			return "", jwt.ErrFailedAuthentication
-		}
+		// 	return "", jwt.ErrFailedAuthentication
+		// }
 
-		if user.Status != 1 {
-			return "", jwt.ErrFailedAuthentication
-		}
+		// if user.Status != 1 {
+		// 	return "", jwt.ErrFailedAuthentication
+		// }
 
-		now := time.Now()
-		user.LastLoginAt = &now
-		_ = store.Client().Users().Update(c, user, metav1.UpdateOptions{})
+		// now := time.Now()
+		// user.LastLoginAt = &now
+		// _ = store.Client().Users().Update(c, user, metav1.UpdateOptions{})
 
-		return user, nil
+		return nil, nil
 	}
 }
 

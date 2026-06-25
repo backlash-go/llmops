@@ -12,7 +12,7 @@ import (
 	"github.com/marmotedu/errors"
 
 	"github.com/jinzhu/copier"
-	"llmops/internal/apiserver/store"
+	"llmops/internal/apiserver/store/mysql"
 	"llmops/internal/pkg/code"
 	"llmops/internal/pkg/model"
 )
@@ -28,7 +28,7 @@ type UserSrv interface {
 }
 
 type userService struct {
-	store store.Factory
+	store mysql.Factory
 }
 
 var _ UserSrv = (*userService)(nil)

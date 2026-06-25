@@ -15,7 +15,7 @@ import (
 
 	"llmops/internal/apiserver/config"
 	cachev1 "llmops/internal/apiserver/controller/v1/cache"
-	userv1 "llmops/internal/apiserver/controller/v1/user"
+	"llmops/internal/apiserver/controller/v1/login"
 	"llmops/internal/apiserver/store/mysql"
 	genericoptions "llmops/internal/pkg/options"
 	genericapiserver "llmops/internal/pkg/server"
@@ -69,6 +69,9 @@ func createAPIServer(cfg *config.Config) (*apiServer, error) {
 		return nil, err
 	}
 
+
+	
+
 	server := &apiServer{
 		gs:               gs,
 		redisOptions:     cfg.RedisOptions,
@@ -82,7 +85,6 @@ func createAPIServer(cfg *config.Config) (*apiServer, error) {
 
 func (s *apiServer) PrepareRun() preparedAPIServer {
 	s.initOauthConfig()
-
 	initRouter(s.genericAPIServer.Engine)
 
 	s.initRedisStore()
@@ -210,15 +212,15 @@ func (s *apiServer) initRedisStore() {
 	go storage.ConnectToRedis(ctx, config)
 }
 
+
 func (s *apiServer) initOauthConfig() {
 	if s.oauthOptions == nil {
 		return
 	}
 
-	userv1.OAuthConfig = userv1.OAuthLoginConfig{
+	login.OauthConfig = login.Config{
 		AuthorizationEndpoint: s.oauthOptions.AuthorizationEndpoint,
 		ClientID:              s.oauthOptions.ClientID,
-		ClientSecret:          s.oauthOptions.ClientSecret,
 		RedirectURI:           s.oauthOptions.RedirectURI,
 		Scopes:                s.oauthOptions.Scopes,
 		StateTTL:              s.oauthOptions.StateTTL,

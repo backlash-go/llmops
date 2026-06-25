@@ -11,17 +11,32 @@ import (
 
 	"llmops/internal/apiserver/store/mysql"
 	"llmops/internal/pkg/code"
+	genericoptions "llmops/internal/pkg/options"
 
 	"llmops/internal/apiserver/router"
+
+	 "llmops/internal/apiserver/controller/v1/login"
 
 	// custom gin validators.
 	_ "llmops/pkg/validator"
 )
 
-func initRouter(g *gin.Engine) {
+func initRouter(g *gin.Engine, oauth *genericoptions.OAuthOptions) {
 	installMiddleware(g)
 	installController(g)
+	ApplyOauthConfig(oauth)
 }
+
+func ApplyOauthConfig(oauth *genericoptions.OAuthOptions) {
+	login.OauthConfig.AuthorizationEndpoint = oauth.AuthorizationEndpoint
+	login.OauthConfig.ClientID =         oauth.ClientID
+	login.OauthConfig.RedirectURI=         oauth.RedirectURI
+	login.OauthConfig.Scopes =               oauth.Scopes
+	login.OauthConfig.StateTTL =             oauth.StateTTL
+	login.OauthConfig.CookieSecure =        oauth.CookieSecure
+		
+}
+
 
 func installMiddleware(g *gin.Engine) {
 }
@@ -33,14 +48,10 @@ func installController(g *gin.Engine) *gin.Engine {
 		core.WriteResponse(c, errors.WithCode(code.ErrPageNotFound, "Page not found."), nil)
 	})
 
-	g.GET("/test", func(c *gin.Context) {
-		c.JSON(200, gin.H{"method": "GET"})
-	})
-
 	// v1 handlers, requiring authentication
 	storeIns, _ := mysql.GetMySQLFactoryOr(nil)
 
-	router.RegisterLoginRoutes(storeIns, g)
+	router.RegisterLoginRoutes(g)
 
 	v1 := g.Group("/ops/api/v1")
 

@@ -9,10 +9,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/marmotedu/component-base/pkg/core"
-	metav1 "github.com/marmotedu/component-base/pkg/meta/v1"
 	"github.com/marmotedu/errors"
 
-	"llmops/internal/apiserver/store"
 	"llmops/internal/pkg/code"
 )
 
@@ -48,15 +46,15 @@ func Validation() gin.HandlerFunc {
 // isAdmin make sure the user is administrator.
 // It returns a `github.com/marmotedu/errors.withCode` error.
 func isAdmin(c *gin.Context) error {
-	username := c.GetString(UsernameKey)
-	user, err := store.Client().Users().Get(c, username, metav1.GetOptions{})
-	if err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
-	}
+	// username := c.GetString(UsernameKey)
+	// user, err := mysql.Client().Users().Get(c, username, metav1.GetOptions{})
+	// if err != nil {
+	// 	return errors.WithCode(code.ErrDatabase, err.Error())
+	// }
 
-	if user.Status != 1 {
-		return errors.WithCode(code.ErrPermissionDenied, "user %s is not active", username)
-	}
+	// if user.Status != 1 {
+	// 	return errors.WithCode(code.ErrPermissionDenied, "user %s is not active", username)
+	// }
 
 	return nil
 }

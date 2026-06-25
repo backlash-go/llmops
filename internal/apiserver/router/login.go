@@ -3,25 +3,13 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	loginv1 "llmops/internal/apiserver/controller/v1/login"
-	genericoptions "llmops/internal/pkg/options"
+	userv1 "llmops/internal/apiserver/controller/v1/user"
+	"llmops/internal/apiserver/store/mysql"
 )
 
-// RegisterLoginRoutes registers unauthenticated login routes.
-func RegisterLoginRoutes(options *genericoptions.OAuthOptions, g *gin.Engine) {
-	config := loginv1.Config{}
-	if options != nil {
-		config = loginv1.Config{
-			AuthorizationEndpoint: options.AuthorizationEndpoint,
-			ClientID:              options.ClientID,
-			RedirectURI:           options.RedirectURI,
-			Scopes:                options.Scopes,
-			StateTTL:              options.StateTTL,
-			CookieSecure:          options.CookieSecure,
-		}
-	}
+// RegisterLoginRoutes registers unauthenticated login routes on the user controller.
+func RegisterLoginRoutes(store mysql.Factory, g *gin.Engine) {
+	userController := userv1.NewUserController(store)
 
-	loginController := loginv1.NewController(config)
-
-	g.GET("/ops/login/generic_oauth", loginController.GenericOAuth)
+	g.GET(userv1.GenericOAuthPath, userController.OauthLogin)
 }

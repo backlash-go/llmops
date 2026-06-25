@@ -1,0 +1,16 @@
+package router
+
+import (
+	"github.com/gin-gonic/gin"
+
+	loginv1 "llmops/internal/apiserver/controller/v1/login"
+)
+
+// RegisterLoginRoutes registers unauthenticated login routes.
+func RegisterLoginRoutes(g *gin.Engine) {
+
+
+	loginController := loginv1.NewController(loginv1.OauthConfig)
+
+	g.GET("/ops/login/generic_oauth", loginController.GenericOAuth)
+}

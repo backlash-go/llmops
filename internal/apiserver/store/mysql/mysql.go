@@ -8,15 +8,14 @@ import (
 	"fmt"
 	"sync"
 
-	v1 "github.com/marmotedu/api/apiserver/v1"
-	"github.com/marmotedu/errors"
-	"gorm.io/gorm"
-
-	"llmops/internal/apiserver/store"
 	"llmops/internal/pkg/logger"
 	"llmops/internal/pkg/model"
 	genericoptions "llmops/internal/pkg/options"
 	"llmops/pkg/db"
+
+	v1 "github.com/marmotedu/api/apiserver/v1"
+	"github.com/marmotedu/errors"
+	"gorm.io/gorm"
 )
 
 type datastore struct {
@@ -27,20 +26,8 @@ type datastore struct {
 	// db *gorm.DB
 }
 
-func (ds *datastore) Users() store.UserStore {
+func (ds *datastore) Users() UserStore {
 	return newUsers(ds)
-}
-
-func (ds *datastore) Secrets() store.SecretStore {
-	return newSecrets(ds)
-}
-
-func (ds *datastore) Policies() store.PolicyStore {
-	return newPolicies(ds)
-}
-
-func (ds *datastore) PolicyAudits() store.PolicyAuditStore {
-	return newPolicyAudits(ds)
 }
 
 func (ds *datastore) Close() error {
@@ -53,12 +40,12 @@ func (ds *datastore) Close() error {
 }
 
 var (
-	mysqlFactory store.Factory
+	mysqlFactory Factory
 	once         sync.Once
 )
 
 // GetMySQLFactoryOr create mysql factory with the given config.
-func GetMySQLFactoryOr(opts *genericoptions.MySQLOptions) (store.Factory, error) {
+func GetMySQLFactoryOr(opts *genericoptions.MySQLOptions) (Factory, error) {
 	if opts == nil && mysqlFactory == nil {
 		return nil, fmt.Errorf("failed to get mysql store fatory")
 	}

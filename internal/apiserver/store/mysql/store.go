@@ -2,9 +2,8 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package store
+package mysql
 
-import "llmops/internal/apiserver/store/mysql"
 
 //go:generate mockgen -self_package=llmops/internal/apiserver/store -destination mock_store.go -package store llmops/internal/apiserver/store Factory,UserStore,SecretStore,PolicyStore
 
@@ -12,7 +11,7 @@ var client Factory
 
 // Factory defines the iam platform storage interface.
 type Factory interface {
-	Users() mysql.UserStore
+	Users() UserStore
 
 	Close() error
 }

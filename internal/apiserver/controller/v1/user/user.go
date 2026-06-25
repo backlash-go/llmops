@@ -6,7 +6,7 @@ package user
 
 import (
 	srvv1 "llmops/internal/apiserver/service/v1"
-	"llmops/internal/apiserver/store"
+	"llmops/internal/apiserver/store/mysql"
 )
 
 // UserController create a user handler used to handle request for user resource.
@@ -15,7 +15,7 @@ type UserController struct {
 }
 
 // NewUserController creates a user handler.
-func NewUserController(store store.Factory) *UserController {
+func NewUserController(store mysql.Factory) *UserController {
 	return &UserController{
 		srv: srvv1.NewService(store),
 	}

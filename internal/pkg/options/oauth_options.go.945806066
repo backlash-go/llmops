@@ -1,7 +1,6 @@
 package options
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -9,11 +8,13 @@ import (
 
 const defaultOAuthStateTTL = 5 * time.Minute
 
+
+
+
 // OAuthOptions defines options for the generic OAuth login flow.
 type OAuthOptions struct {
 	AuthorizationEndpoint string        `json:"authorization-endpoint" mapstructure:"authorization-endpoint"`
 	ClientID              string        `json:"client-id"              mapstructure:"client-id"`
-	ClientSecret          string        `json:"-"                      mapstructure:"client-secret"`
 	RedirectURI           string        `json:"redirect-uri"           mapstructure:"redirect-uri"`
 	Scopes                []string      `json:"scopes"                 mapstructure:"scopes"`
 	StateTTL              time.Duration `json:"state-ttl"              mapstructure:"state-ttl"`
@@ -31,13 +32,7 @@ func NewOAuthOptions() *OAuthOptions {
 
 // Validate verifies OAuth options.
 func (o *OAuthOptions) Validate() []error {
-	var errs []error
-
-	if o.StateTTL <= 0 {
-		errs = append(errs, fmt.Errorf("--oauth.state-ttl must be greater than zero"))
-	}
-
-	return errs
+	return nil
 }
 
 // AddFlags adds OAuth-related command-line flags.
@@ -49,7 +44,6 @@ func (o *OAuthOptions) AddFlags(fs *pflag.FlagSet) {
 		"Keycloak OpenID Connect authorization endpoint.",
 	)
 	fs.StringVar(&o.ClientID, "oauth.client-id", o.ClientID, "OAuth client ID.")
-	fs.StringVar(&o.ClientSecret, "oauth.client-secret", o.ClientSecret, "OAuth client secret.")
 	fs.StringVar(&o.RedirectURI, "oauth.redirect-uri", o.RedirectURI, "OAuth callback URI.")
 	fs.StringSliceVar(&o.Scopes, "oauth.scopes", o.Scopes, "OAuth scopes requested from the identity provider.")
 	fs.DurationVar(&o.StateTTL, "oauth.state-ttl", o.StateTTL, "Maximum lifetime of the OAuth state cookie.")
