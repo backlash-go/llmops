@@ -105,6 +105,10 @@ internal/pkg/model/<resource>.go
 - Model 放在 `internal/pkg/model/`，字段必须声明明确的 `gorm` 与 `json` 标签。
 - Model 必须通过 `TableName()` 固定表名。
 
+
+
+
+
 DTO 转 Model 可以使用 `copier.Copy`，但必须确认字段匹配
 
 ## Controller 规则
