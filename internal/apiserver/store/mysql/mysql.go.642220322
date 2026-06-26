@@ -26,12 +26,12 @@ type datastore struct {
 	// db *gorm.DB
 }
 
-func (ds *datastore) User() UserStore {
-	return newUser(ds)
+func (ds *datastore) Users() UserStore {
+	return newUsers(ds)
 }
 
-func (ds *datastore) UserIdentity() UserIdentityStore {
-	return newUserIdentity(ds)
+func (ds *datastore) UserIdentities() UserIdentityStore {
+	return newUserIdentities(ds)
 }
 
 func (ds *datastore) Close() error {

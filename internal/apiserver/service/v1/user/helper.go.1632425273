@@ -1,0 +1,61 @@
+package user
+
+import (
+	"strings"
+	"time"
+
+	"llmops/internal/pkg/model"
+	apiv1 "llmops/pkg/api/llmops/v1"
+)
+
+func oauthDisplayName(r *apiv1.OAuthLoginRequest) string {
+	if strings.TrimSpace(r.DisplayName) != "" {
+		return strings.TrimSpace(r.DisplayName)
+	}
+
+	return strings.TrimSpace(strings.TrimSpace(r.FirstName) + " " + strings.TrimSpace(r.LastName))
+}
+
+func oauthIdentityFromRequest(r *apiv1.OAuthLoginRequest, userID uint64) *model.UserIdentity {
+	return &model.UserIdentity{
+		UserID:              userID,
+		Provider:            strings.TrimSpace(r.Provider),
+		Issuer:              strings.TrimSpace(r.Issuer),
+		Subject:             strings.TrimSpace(r.Subject),
+		ProviderUsername:    strings.TrimSpace(r.PreferredUsername),
+		ProviderEmail:       strings.TrimSpace(r.Email),
+		ProviderDisplayName: oauthDisplayName(r),
+		ProviderDN:          strings.TrimSpace(r.ProviderDN),
+		RawProfile:          r.RawProfile,
+	}
+}
+
+func applyOAuthUserProfile(user *model.User, r *apiv1.OAuthLoginRequest, now time.Time) {
+	user.FirstName = strings.TrimSpace(r.FirstName)
+	user.LastName = strings.TrimSpace(r.LastName)
+	user.Avatar = strings.TrimSpace(r.Avatar)
+	user.LastLoginAt = &now
+}
+
+func applyOAuthIdentityProfile(identity *model.UserIdentity, r *apiv1.OAuthLoginRequest) {
+	identity.ProviderUsername = strings.TrimSpace(r.PreferredUsername)
+	identity.ProviderEmail = strings.TrimSpace(r.Email)
+	identity.ProviderDisplayName = oauthDisplayName(r)
+	identity.ProviderDN = strings.TrimSpace(r.ProviderDN)
+	identity.RawProfile = r.RawProfile
+}
+
+func oauthLoginResponse(user *model.User, identity *model.UserIdentity, created bool) *apiv1.OAuthLoginResponse {
+	return &apiv1.OAuthLoginResponse{
+		UserID:      user.ID,
+		IdentityID:  identity.ID,
+		Username:    user.Username,
+		Email:       user.Email,
+		Provider:    identity.Provider,
+		Issuer:      identity.Issuer,
+		Subject:     identity.Subject,
+		Created:     created,
+		LastLoginAt: user.LastLoginAt,
+	}
+}
+

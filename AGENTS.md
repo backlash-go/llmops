@@ -48,7 +48,7 @@ cmd/<app>/main.go → internal/<app>/app.go → options.NewOptions() → config.
 
 ## Server 与中间件规则
 
-通用 HTTP Server 由 `internal/pkg/server` 负责创建和运行，业务 Server 只负责组装配置与注册业务路由。
+ HTTP Server 由 `internal/pkg/server` 负责创建和运行，业务 Server 只负责组装配置与注册业务路由。
 
 中间件配置链路：
 
@@ -90,8 +90,8 @@ internal/pkg/model/<resource>.go
 路径规则：
 
 - REST 资源路径使用复数、小写、短横线风格。
-- API 版本前缀由上层统一提供，例如 `/ops/api/v1`。
-- 登录、回调、健康检查、metrics 等非资源路径可以独立注册，但仍应保持 Controller 边界清晰。
+- API 版本前缀由上层统一提供 `/ops/api/v1`。
+- 登录、回调、健康检查、metrics 等非资源路径可以独立注册，但仍应保持在相关资源的controller下。
 
 ## DTO 与 Model 规则
 
@@ -99,7 +99,6 @@ internal/pkg/model/<resource>.go
 
 - 请求 响应的 DTO 放在 `pkg/api/llmops/v1/`。
 - 响应 DTO 不得直接复用含敏感字段的请求 DTO。
-- 响应 DTO 不得包含密码、Token、Cookie、内部错误、软删除字段等敏感或内部字段。
 - JSON 字段统一使用 `snake_case`。
 - 参数校验优先使用 `binding` 标签。
 - Model 放在 `internal/pkg/model/`，字段必须声明明确的 `gorm` 与 `json` 标签。
@@ -138,7 +137,7 @@ Controller 不应：
 ## Service 规则
 
 Service 接口使用 API DTO 作为输入，使用响应 DTO 或错误作为输出。
-
+Service Factory 接口下的 属性接口 都使用单数
 Service 职责包括：
 
 - DTO 与 Model 转换；
@@ -186,12 +185,13 @@ Store 只负责数据访问：
 - 本项目导入路径 `llmops/...` 单独分组。
 - 导出标识符使用 `PascalCase`，内部标识符使用 `camelCase`。
 - 包名简短、小写、无下划线。
-- 接口使用职责名称，如 `UserSrv`、`UserStore`。
-- 实现使用非导出类型，如 `userService`、`users`。
+- 接口使用职责名称，如 `UserSrv`、`UserStore`。 不要用复数
+- 实现使用非导出类型，如 `userService`、`user`。
 - 方法接收者保持简短且一致，如 `u *UserController`、`u *userService`。
 - 注释说明“做什么”，避免重复代码本身。
 - 导出类型、导出方法应有完整注释。
 - 不忽略可能失败的错误。若确实忽略，必须写明原因。
+- 例如 service/v1/user 下如果 逻辑太多可以 在对应目录下创建一个Helper.go 文件
 
 
 

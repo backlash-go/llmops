@@ -16,3 +16,48 @@
 7. myapp 验证 URL state 
 
 ```
+
+- token 解析 之后
+
+```
+
+
+{
+  "acr": "1",
+  "at_hash": "5E184nPuJFJ36nvtrJrqrA",
+  "aud": "xmit-llmops",
+  "auth_time": 1782452389,
+  "azp": "xmit-llmops",
+  "email": "xianbin.xi@luxshare-ict.com",
+  "email_verified": true,
+  "exp": 1782452690,
+  "family_name": "席贤斌",
+  "given_name": "Xianbin.Xi",
+  "iat": 1782452390,
+  "iss": "https://smart-auto.luxshare-ict.com/keycloak/realms/xmit-luxshare",
+  "jti": "cd61c664-0daa-7fdb-9eb2-4fd9d06311e6",
+  "name": "Xianbin.Xi 席贤斌",
+  "preferred_username": "31070182",
+  "roles": [
+    "llmops-admin"
+  ],
+  "sid": "gOSMZuyxOzAzQmirOAMKOdme",
+  "sub": "dc4663db-5a90-4333-8471-db0a88b5520d",
+  "typ": "ID"
+}
+
+```
+
+```
+
+拿到 Keycloak token claims
+→ 先查 user_identity(provider + issuer + subject)
+→ 不存在：
+    创建 user，拿 user.ID
+    再创建 user_identity
+→ 存在：
+    查 user
+    对比 email / first_name / last_name
+    不同才更新 user
+    同步更新 user_identity 的 provider 信息/raw_profile
+```

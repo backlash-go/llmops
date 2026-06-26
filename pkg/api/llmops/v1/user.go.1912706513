@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"encoding/json"
 	"time"
 
 	"llmops/internal/pkg/model"
@@ -31,15 +32,17 @@ type ChangeUserPasswordRequest struct {
 
 // OAuthLoginRequest is the request used after an OAuth id_token has been validated.
 type OAuthLoginRequest struct {
-	Provider          string `json:"provider" binding:"required"`
-	Issuer            string `json:"issuer" binding:"required"`
-	Subject           string `json:"subject" binding:"required"`
-	PreferredUsername string `json:"preferred_username"`
-	Email             string `json:"email"`
-	FirstName         string `json:"first_name"`
-	LastName          string `json:"last_name"`
-	DisplayName       string `json:"display_name"`
-	Avatar            string `json:"avatar"`
+	Provider          string          `json:"provider" binding:"required"`
+	Issuer            string          `json:"issuer" binding:"required"`
+	Subject           string          `json:"subject" binding:"required"`
+	PreferredUsername string          `json:"preferred_username"`
+	Email             string          `json:"email"`
+	FirstName         string          `json:"first_name"`
+	LastName          string          `json:"last_name"`
+	DisplayName       string          `json:"display_name"`
+	Avatar            string          `json:"avatar"`
+	ProviderDN        string          `json:"provider_dn"`
+	RawProfile        json.RawMessage `json:"raw_profile,omitempty"`
 }
 
 // OAuthLoginResponse is the response returned after local OAuth login binding.

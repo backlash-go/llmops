@@ -44,18 +44,10 @@ CREATE TABLE `user_identity` (
   `provider` varchar(32) NOT NULL COMMENT '身份提供商:keycloak,ldap,github,google',
   `issuer` varchar(255) NOT NULL COMMENT '身份源实例,如OIDC Issuer或LDAP服务标识',
   `subject` varchar(128) NOT NULL COMMENT '三方用户唯一ID,如OIDC sub、LDAP entryUUID、AD objectGUID dingding unionId',
-  `provider_username` varchar(128) NOT NULL DEFAULT '' COMMENT '三方用户名,如Keycloak username、LDAP uid、AD sAMAccountName',
-  `provider_email` varchar(255) NOT NULL DEFAULT '' COMMENT '三方邮箱',
-  `provider_display_name` varchar(128) NOT NULL DEFAULT '' COMMENT '三方展示名称,如cn/displayName',
-  `provider_dn` varchar(512) NOT NULL DEFAULT '' COMMENT 'LDAP DN,非LDAP可为空',
-  `raw_profile` json DEFAULT NULL COMMENT '三方原始用户信息',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` datetime DEFAULT NULL COMMENT '删除时间',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `uk_provider_subject` (`provider`,`issuer`,`subject`),
-  KEY `idx_user_id` (`user_id`),
-  KEY `idx_provider_username` (`provider`,`provider_username`),
-  KEY `idx_provider_email` (`provider`,`provider_email`)
-
+  KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;;

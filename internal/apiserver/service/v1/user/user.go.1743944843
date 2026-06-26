@@ -1,0 +1,145 @@
+// Copyright 2020 Lingfei Kong <colin404@foxmail.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+// Package 
+package user
+
+import (
+	"context"
+	stderrors "errors"
+	"regexp"
+	"strings"
+	"time"
+
+	"github.com/jinzhu/copier"
+	"github.com/marmotedu/errors"
+	"gorm.io/gorm"
+
+	"llmops/internal/apiserver/store/mysql"
+	"llmops/internal/pkg/code"
+	"llmops/internal/pkg/model"
+	apiv1 "llmops/pkg/api/llmops/v1"
+)
+
+// UserSrv defines functions used to handle user request.
+type UserSrv interface {
+	Create(ctx context.Context, r *apiv1.CreateUserRequest) error
+	OauthLogin(ctx context.Context, r *apiv1.OAuthLoginRequest) (*apiv1.OAuthLoginResponse, error)
+}
+
+type userService struct {
+	store mysql.Factory
+}
+
+var _ UserSrv = (*userService)(nil)
+
+// NewUser creates a user service.
+func NewUser(store mysql.Factory) UserSrv {
+	return &userService{store: store}
+}
+
+// Create creates a user.
+func (u *userService) Create(ctx context.Context, r *apiv1.CreateUserRequest) error {
+	var user model.User
+
+	_ = copier.Copy(&user, r)
+
+	if err := u.store.User().Create(ctx, &user); err != nil {
+		if match, _ := regexp.MatchString("Duplicate entry '.*' for key 'uk_(username|email)'", err.Error()); match {
+			return errors.WithCode(code.ErrUserAlreadyExist, err.Error())
+		}
+
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return nil
+}
+
+// OauthLogin creates or updates the local user binding after OAuth token validation.
+func (u *userService) OauthLogin(ctx context.Context, r *apiv1.OAuthLoginRequest) (*apiv1.OAuthLoginResponse, error) {
+	if r == nil {
+		return nil, errors.WithCode(code.ErrValidation, "OAuth login request is required")
+	}
+
+	provider := strings.TrimSpace(r.Provider)
+	issuer := strings.TrimSpace(r.Issuer)
+	subject := strings.TrimSpace(r.Subject)
+	if provider == "" || issuer == "" || subject == "" {
+		return nil, errors.WithCode(code.ErrValidation, "OAuth provider, issuer and subject are required")
+	}
+
+	identity, err := u.store.UserIdentity().Get(ctx, &model.UserIdentity{
+		Provider: provider,
+		Issuer:   issuer,
+		Subject:  subject,
+	})
+	if err == nil {
+		return u.updateOAuthUser(ctx, identity, r)
+	}
+	if !stderrors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return u.createOAuthUser(ctx, r)
+}
+
+func (u *userService) updateOAuthUser(
+	ctx context.Context,
+	identity *model.UserIdentity,
+	r *apiv1.OAuthLoginRequest,
+) (*apiv1.OAuthLoginResponse, error) {
+	user, err := u.store.User().Get(ctx, &model.User{ID: identity.UserID})
+	if err != nil {
+		if stderrors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.WithCode(code.ErrUserNotFound, err.Error())
+		}
+
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	now := time.Now()
+	applyOAuthUserProfile(user, r, now)
+	if err := u.store.User().Update(ctx, user); err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	applyOAuthIdentityProfile(identity, r)
+	if err := u.store.UserIdentity().Update(ctx, identity); err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return oauthLoginResponse(user, identity, false), nil
+}
+
+func (u *userService) createOAuthUser(ctx context.Context, r *apiv1.OAuthLoginRequest) (*apiv1.OAuthLoginResponse, error) {
+	username := strings.TrimSpace(r.PreferredUsername)
+	email := strings.TrimSpace(r.Email)
+	if username == "" || email == "" {
+		return nil, errors.WithCode(code.ErrValidation, "OAuth preferred_username and email are required")
+	}
+
+	now := time.Now()
+	user := &model.User{
+		Username:    username,
+		Email:       email,
+		FirstName:   strings.TrimSpace(r.FirstName),
+		LastName:    strings.TrimSpace(r.LastName),
+		Avatar:      strings.TrimSpace(r.Avatar),
+		Status:      1,
+		LastLoginAt: &now,
+	}
+	if err := u.store.User().Create(ctx, user); err != nil {
+		if match, _ := regexp.MatchString("Duplicate entry '.*' for key 'uk_(username|email)'", err.Error()); match {
+			return nil, errors.WithCode(code.ErrUserAlreadyExist, err.Error())
+		}
+
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	identity := oauthIdentityFromRequest(r, user.ID)
+	if err := u.store.UserIdentity().Create(ctx, identity); err != nil {
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return oauthLoginResponse(user, identity, true), nil
+}

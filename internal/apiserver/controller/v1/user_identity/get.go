@@ -1,0 +1,41 @@
+// Copyright 2020 Lingfei Kong <colin404@foxmail.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
+package useridentity
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/marmotedu/component-base/pkg/core"
+	"github.com/marmotedu/errors"
+
+	"llmops/internal/pkg/code"
+	apiv1 "llmops/pkg/api/llmops/v1"
+	"llmops/pkg/log"
+)
+
+// Get returns a user identity binding from the storage.
+func (u *UserIdentityController) Get(c *gin.Context) {
+	log.L(c).Info("user identity get function called.")
+
+	var r apiv1.GetUserIdentityRequest
+	if err := c.ShouldBindUri(&r); err != nil {
+		core.WriteResponse(c, errors.WithCode(code.ErrBind, err.Error()), nil)
+
+		return
+	}
+	if r.ID == 0 {
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, "user identity id is required"), nil)
+
+		return
+	}
+
+	resp, err := u.srv.UserIdentity().Get(c, &r)
+	if err != nil {
+		core.WriteResponse(c, err, nil)
+
+		return
+	}
+
+	core.WriteResponse(c, nil, resp)
+}

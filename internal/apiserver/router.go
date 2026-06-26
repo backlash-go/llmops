@@ -45,6 +45,7 @@ func installController(g *gin.Engine) *gin.Engine {
 	v1 := g.Group("/ops/api/v1")
 
 	router.RegisterUserRoutes(storeIns, v1)
+	router.RegisterUserIdentityRoutes(storeIns, v1)
 
 	return g
 }

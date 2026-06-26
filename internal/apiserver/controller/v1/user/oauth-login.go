@@ -10,6 +10,7 @@ import (
 	"github.com/marmotedu/errors"
 
 	"llmops/internal/pkg/code"
+	apiv1 "llmops/pkg/api/llmops/v1"
 	"llmops/pkg/log"
 )
 
@@ -170,10 +171,39 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 
 	printIDTokenClaims(claims)
 
-	core.WriteResponse(c, nil, map[string]interface{}{
-		"status":             "id_token_validated",
-		"sub":                claims["sub"],
-		"preferred_username": claims["preferred_username"],
-		"email":              claims["email"],
-	})
+	loginRequest, err := oauthLoginRequestFromClaims(claims)
+	if err != nil {
+		log.L(c).Warnf("build OAuth login request failed: %v", err)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
+
+		return
+	}
+
+	if _, err := u.srv.User().OauthLogin(c.Request.Context(), loginRequest); err != nil {
+		core.WriteResponse(c, err, nil)
+
+		return
+	}
+
+	core.WriteResponse(c, nil, map[string]string{"status": "ok"})
+}
+
+func oauthLoginRequestFromClaims(claims map[string]interface{}) (*apiv1.OAuthLoginRequest, error) {
+	return &apiv1.OAuthLoginRequest{
+		Provider:          "keycloak",
+		Issuer:            claimString(claims, "iss"),
+		Subject:           claimString(claims, "sub"),
+		PreferredUsername: claimString(claims, "preferred_username"),
+		Email:             claimString(claims, "email"),
+		FirstName:         claimString(claims, "given_name"),
+		LastName:          claimString(claims, "family_name"),
+		DisplayName:       claimString(claims, "name"),
+		Avatar:            claimString(claims, "picture"),
+	}, nil
+}
+
+func claimString(claims map[string]interface{}, name string) string {
+	value, _ := claims[name].(string)
+
+	return value
 }
