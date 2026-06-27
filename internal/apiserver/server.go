@@ -5,7 +5,6 @@
 package apiserver
 
 import (
-	"context"
 	"fmt"
 
 	pb "github.com/marmotedu/api/proto/apiserver/v1"
@@ -16,13 +15,14 @@ import (
 	"llmops/internal/apiserver/config"
 	cachev1 "llmops/internal/apiserver/controller/v1/cache"
 	userv1 "llmops/internal/apiserver/controller/v1/user"
+	"llmops/internal/apiserver/deps"
 	"llmops/internal/apiserver/store/mysql"
+	"llmops/internal/apiserver/store/redis"
 	genericoptions "llmops/internal/pkg/options"
 	genericapiserver "llmops/internal/pkg/server"
 	"llmops/pkg/log"
 	"llmops/pkg/shutdown"
 	"llmops/pkg/shutdown/shutdownmanagers/posixsignal"
-	"llmops/pkg/storage"
 )
 
 type apiServer struct {
@@ -83,9 +83,11 @@ func createAPIServer(cfg *config.Config) (*apiServer, error) {
 func (s *apiServer) PrepareRun() preparedAPIServer {
 	s.initOauthConfig()
 
-	initRouter(s.genericAPIServer.Engine)
-
-	s.initRedisStore()
+	depsIns, err := s.initDependencies()
+	if err != nil {
+		log.Fatalf("init dependencies failed: %s", err.Error())
+	}
+	initRouter(s.genericAPIServer.Engine, depsIns)
 
 	s.gs.AddShutdownCallback(shutdown.ShutdownFunc(func(string) error {
 		mysqlStore, _ := mysql.GetMySQLFactoryOr(nil)
@@ -135,10 +137,17 @@ func (c *completedExtraConfig) New() (*grpcAPIServer, error) {
 	opts := []grpc.ServerOption{grpc.MaxRecvMsgSize(c.MaxMsgSize), grpc.Creds(creds)}
 	grpcServer := grpc.NewServer(opts...)
 
-	storeIns, _ := mysql.GetMySQLFactoryOr(c.mysqlOptions)
+	storeIns, err := mysql.GetMySQLFactoryOr(c.mysqlOptions)
+
+	if err != nil {
+		return nil, err
+	}
+
 	// storeIns, _ := etcd.GetEtcdFactoryOr(c.etcdOptions, nil)
 	mysql.SetClient(storeIns)
+
 	cacheIns, err := cachev1.GetCacheInsOr(storeIns)
+
 	if err != nil {
 		log.Fatalf("Failed to get cache instance: %s", err.Error())
 	}
@@ -182,15 +191,22 @@ func buildExtraConfig(cfg *config.Config) (*ExtraConfig, error) {
 	}, nil
 }
 
-func (s *apiServer) initRedisStore() {
-	ctx, cancel := context.WithCancel(context.Background())
-	s.gs.AddShutdownCallback(shutdown.ShutdownFunc(func(string) error {
-		cancel()
+func (s *apiServer) initDependencies() (*deps.Dependencies, error) {
+	mysqlStore, _ := mysql.GetMySQLFactoryOr(nil)
 
-		return nil
-	}))
+	redisStore, err := s.initRedisStore()
+	if err != nil {
+		return nil, fmt.Errorf("init redis store: %w", err)
+	}
 
-	config := &storage.Config{
+	return &deps.Dependencies{
+		MySQL: mysqlStore,
+		Redis: redisStore,
+	}, nil
+}
+
+func (s *apiServer) initRedisStore() (redis.RStore, error) {
+	config := &redis.Config{
 		Host:                  s.redisOptions.Host,
 		Port:                  s.redisOptions.Port,
 		Addrs:                 s.redisOptions.Addrs,
@@ -206,8 +222,16 @@ func (s *apiServer) initRedisStore() {
 		SSLInsecureSkipVerify: s.redisOptions.SSLInsecureSkipVerify,
 	}
 
-	// try to connect to redis
-	go storage.ConnectToRedis(ctx, config)
+	redisStore, err := redis.NewRedisStore(config)
+	if err != nil {
+		return nil, err
+	}
+
+	s.gs.AddShutdownCallback(shutdown.ShutdownFunc(func(string) error {
+		return redisStore.Close()
+	}))
+
+	return redisStore, nil
 }
 
 func (s *apiServer) initOauthConfig() {

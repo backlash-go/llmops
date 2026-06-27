@@ -9,8 +9,9 @@ import (
 	"github.com/marmotedu/component-base/pkg/core"
 	"github.com/marmotedu/errors"
 
-	"llmops/internal/apiserver/store/mysql"
+	"llmops/internal/apiserver/deps"
 	"llmops/internal/pkg/code"
+	"llmops/internal/pkg/middleware"
 
 	"llmops/internal/apiserver/router"
 
@@ -18,15 +19,15 @@ import (
 	_ "llmops/pkg/validator"
 )
 
-func initRouter(g *gin.Engine) {
+func initRouter(g *gin.Engine, depsIns *deps.Dependencies) {
 	installMiddleware(g)
-	installController(g)
+	installController(g, depsIns)
 }
 
 func installMiddleware(g *gin.Engine) {
 }
 
-func installController(g *gin.Engine) *gin.Engine {
+func installController(g *gin.Engine, depsIns *deps.Dependencies) *gin.Engine {
 	// Middlewares.
 
 	g.NoRoute(func(c *gin.Context) {
@@ -37,15 +38,12 @@ func installController(g *gin.Engine) *gin.Engine {
 		c.JSON(200, gin.H{"method": "GET"})
 	})
 
-	// v1 handlers, requiring authentication
-	storeIns, _ := mysql.GetMySQLFactoryOr(nil)
-
-	router.RegisterLoginRoutes(storeIns, g)
-
 	v1 := g.Group("/ops/api/v1")
+	v1.Use(middleware.CookieSession(depsIns.Redis))
 
-	router.RegisterUserRoutes(storeIns, v1)
-	router.RegisterUserIdentityRoutes(storeIns, v1)
+	router.RegisterUserRoutes(depsIns, g, v1)
+
+	router.RegisterUserIdentityRoutes(depsIns, v1)
 
 	return g
 }

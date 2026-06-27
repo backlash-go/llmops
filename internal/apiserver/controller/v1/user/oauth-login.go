@@ -10,6 +10,7 @@ import (
 	"github.com/marmotedu/errors"
 
 	"llmops/internal/pkg/code"
+	"llmops/internal/pkg/session"
 	apiv1 "llmops/pkg/api/llmops/v1"
 	"llmops/pkg/log"
 )
@@ -128,6 +129,7 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 		subtle.ConstantTimeCompare([]byte(queryState), []byte(cookieState)) != 1 {
 		log.L(c).Warnf("OAuth state validation failed: cookie_error=%v", err)
 		deleteStateCookie(c, config.CookieSecure)
+
 		core.WriteResponse(c, errors.WithCode(code.ErrValidation, "invalid or expired OAuth state"), nil)
 
 		return
@@ -146,11 +148,12 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 
 	tokenResponse, err := exchangeOAuthCode(c.Request.Context(), config, authorizationCode)
 	if err != nil {
-		log.L(c).Warnf("OAuth code exchange failed: %v", err)
+		log.L(c).Warnf("OAuth code exchange exchangeOAuthCode failed: %v", err)
 		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
 	}
+
 	log.L(c).Infof(
 		"OAuth code exchanged: token_type=%s expires_in=%d has_access_token=%t has_id_token=%t has_refresh_token=%t",
 		tokenResponse.TokenType,
@@ -162,11 +165,12 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 
 	claims, err := validateIDToken(c.Request.Context(), config, tokenResponse.IDToken)
 	if err != nil {
-		log.L(c).Warnf("OAuth id_token validation failed: %v", err)
+		log.L(c).Warnf("OAuth id_token validateIDToken failed: %v", err)
 		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
 	}
+
 	log.L(c).Info("OAuth id_token validation passed")
 
 	printIDTokenClaims(claims)
@@ -179,13 +183,29 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 		return
 	}
 
-	if _, err := u.srv.User().OauthLogin(c.Request.Context(), loginRequest); err != nil {
+	loginResponse, err := u.srv.User().OauthLogin(c.Request.Context(), loginRequest)
+	if err != nil {
+
+		log.L(c).Errorw("u.srv.User().OauthLogin failed: %v", err)
+
 		core.WriteResponse(c, err, nil)
 
 		return
 	}
 
-	core.WriteResponse(c, nil, map[string]string{"status": "ok"})
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie(
+		session.CookieName,
+		loginResponse.SessionID,
+		loginResponse.SessionMaxAge,
+		session.CookiePath,
+		"",
+		config.CookieSecure,
+		true,
+	)
+	log.L(c).Infof("OAuth session cookie set: max_age=%d path=%s secure=%t", loginResponse.SessionMaxAge, session.CookiePath, config.CookieSecure)
+
+	c.Redirect(http.StatusFound, session.FrontendPath)
 }
 
 func oauthLoginRequestFromClaims(claims map[string]interface{}) (*apiv1.OAuthLoginRequest, error) {

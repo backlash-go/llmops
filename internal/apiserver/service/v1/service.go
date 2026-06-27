@@ -7,9 +7,9 @@ package v1
 //go:generate mockgen -self_package=llmops/internal/apiserver/service/v1 -destination mock_service.go -package v1 llmops/internal/apiserver/service/v1 Service
 
 import (
+	"llmops/internal/apiserver/deps"
 	"llmops/internal/apiserver/service/v1/user"
 	useridentity "llmops/internal/apiserver/service/v1/user_identity"
-	"llmops/internal/apiserver/store/mysql"
 )
 
 // Service defines functions used to return resource interface.
@@ -19,20 +19,20 @@ type Service interface {
 }
 
 type service struct {
-	store mysql.Factory
+	deps *deps.Dependencies
 }
 
 // NewService returns Service interface.
-func NewService(store mysql.Factory) Service {
+func NewService(depsIns *deps.Dependencies) Service {
 	return &service{
-		store: store,
+		deps: depsIns,
 	}
 }
 
 func (s *service) User() user.UserSrv {
-	return user.NewUser(s.store)
+	return user.NewUser(s.deps)
 }
 
 func (s *service) UserIdentity() useridentity.UserIdentitySrv {
-	return useridentity.NewUserIdentity(s.store)
+	return useridentity.NewUserIdentity(s.deps.MySQL)
 }

@@ -13,6 +13,12 @@ import (
 // UsernameKey defines the key in gin context which represents the owner of the secret.
 const UsernameKey = "username"
 
+// UserIDKey defines the key in gin context which represents the current user ID.
+const UserIDKey = "user_id"
+
+// SessionIDKey defines the key in gin context which represents the current session ID.
+const SessionIDKey = "session_id"
+
 // Context is a middleware that injects common prefix fields to gin.Context.
 func Context() gin.HandlerFunc {
 	return func(c *gin.Context) {

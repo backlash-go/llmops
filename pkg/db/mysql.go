@@ -48,6 +48,12 @@ func New(opts *Options) (*gorm.DB, error) {
 		return nil, err
 	}
 
+	if err := sqlDB.Ping(); err != nil {
+		_ = sqlDB.Close()
+
+		return nil, err
+	}
+
 	// SetMaxOpenConns sets the maximum number of open connections to the database.
 	sqlDB.SetMaxOpenConns(opts.MaxOpenConnections)
 

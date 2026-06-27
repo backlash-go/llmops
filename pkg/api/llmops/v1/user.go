@@ -44,15 +44,17 @@ type OAuthLoginRequest struct {
 
 // OAuthLoginResponse is the response returned after local OAuth login binding.
 type OAuthLoginResponse struct {
-	UserID      uint64     `json:"user_id"`
-	IdentityID  uint64     `json:"identity_id"`
-	Username    string     `json:"username"`
-	Email       string     `json:"email"`
-	Provider    string     `json:"provider"`
-	Issuer      string     `json:"issuer"`
-	Subject     string     `json:"subject"`
-	Created     bool       `json:"created"`
-	LastLoginAt *time.Time `json:"last_login_at,omitempty"`
+	UserID        uint64     `json:"user_id"`
+	IdentityID    uint64     `json:"identity_id"`
+	Username      string     `json:"username"`
+	Email         string     `json:"email"`
+	Provider      string     `json:"provider"`
+	Issuer        string     `json:"issuer"`
+	Subject       string     `json:"subject"`
+	Created       bool       `json:"created"`
+	LastLoginAt   *time.Time `json:"last_login_at,omitempty"`
+	SessionID     string     `json:"-"`
+	SessionMaxAge int        `json:"-"`
 }
 
 type ListUserResponse struct {

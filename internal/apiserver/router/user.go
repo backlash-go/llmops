@@ -5,11 +5,14 @@ import (
 	"github.com/gin-gonic/gin"
 
 	userv1 "llmops/internal/apiserver/controller/v1/user"
-	"llmops/internal/apiserver/store/mysql"
+	"llmops/internal/apiserver/deps"
 )
 
-func RegisterUserRoutes(store mysql.Factory, v *gin.RouterGroup) {
-	userController := userv1.NewUserController(store)
+// RegisterUserRoutes registers user login and resource routes.
+func RegisterUserRoutes(depsIns *deps.Dependencies, g *gin.Engine, v *gin.RouterGroup) {
+	userController := userv1.NewUserController(depsIns)
+
+	g.GET(userv1.GenericOAuthPath, userController.OauthLogin)
 
 	users := v.Group("/users")
 

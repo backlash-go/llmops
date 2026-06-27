@@ -119,9 +119,7 @@ Controller 标准流程：
 ```text
 记录必要日志
   → ShouldBindJSON / ShouldBindQuery / ShouldBindUri
-  → 绑定或校验失败立即返回
-  → 调用 Service
-  → core.WriteResponse(c, err, data)
+  →  controller 层 必须 log.L(c) 记录日志  日志必须打印上面的函数调用的名字标记
   → 写错误响应后立即 return
 ```
 

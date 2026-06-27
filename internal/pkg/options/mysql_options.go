@@ -74,6 +74,7 @@ func (o *MySQLOptions) AddFlags(fs *pflag.FlagSet) {
 }
 
 // NewClient create mysql store with the given config.
+
 func (o *MySQLOptions) NewClient() (*gorm.DB, error) {
 	opts := &db.Options{
 		Host:                  o.Host,

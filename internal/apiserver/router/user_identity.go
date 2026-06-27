@@ -5,12 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	useridentityv1 "llmops/internal/apiserver/controller/v1/user_identity"
-	"llmops/internal/apiserver/store/mysql"
+	"llmops/internal/apiserver/deps"
 )
 
 // RegisterUserIdentityRoutes registers user identity resource routes.
-func RegisterUserIdentityRoutes(store mysql.Factory, v *gin.RouterGroup) {
-	userIdentityController := useridentityv1.NewUserIdentityController(store)
+func RegisterUserIdentityRoutes(depsIns *deps.Dependencies, v *gin.RouterGroup) {
+	userIdentityController := useridentityv1.NewUserIdentityController(depsIns)
 
 	userIdentities := v.Group("/user-identities")
 
