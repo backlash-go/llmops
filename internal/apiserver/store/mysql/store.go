@@ -4,7 +4,7 @@
 
 package mysql
 
-//go:generate mockgen -self_package=llmops/internal/apiserver/store -destination mock_store.go -package store llmops/internal/apiserver/store Factory,UserStore,UserIdentityStore,SecretStore,PolicyStore
+//go:generate mockgen -self_package=llmops/internal/apiserver/store -destination mock_store.go -package store llmops/internal/apiserver/store Factory,UserStore,UserIdentityStore,UserAIAPIKeyStore,SecretStore,PolicyStore
 
 var client Factory
 
@@ -12,6 +12,7 @@ var client Factory
 type Factory interface {
 	User() UserStore
 	UserIdentity() UserIdentityStore
+	UserAIAPIKey() UserAIAPIKeyStore
 	Close() error
 }
 

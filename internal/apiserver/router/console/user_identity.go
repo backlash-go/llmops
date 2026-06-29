@@ -4,7 +4,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	useridentityv1 "llmops/internal/apiserver/controller/v1/user_identity"
+	useridentityv1 "llmops/internal/apiserver/controller/v1/console/user_identity"
 	"llmops/internal/apiserver/deps"
 )
 

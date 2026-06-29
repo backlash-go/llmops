@@ -19,6 +19,9 @@ const UserIDKey = "user_id"
 // SessionIDKey defines the key in gin context which represents the current session ID.
 const SessionIDKey = "session_id"
 
+// RolesKey defines the key in gin context which represents the current user roles.
+const RolesKey = "roles"
+
 // Context is a middleware that injects common prefix fields to gin.Context.
 func Context() gin.HandlerFunc {
 	return func(c *gin.Context) {

@@ -6,17 +6,17 @@ package useridentity
 
 import (
 	"llmops/internal/apiserver/deps"
-	srvv1 "llmops/internal/apiserver/service/v1"
+	consolesrv "llmops/internal/apiserver/service/v1/console"
 )
 
 // UserIdentityController creates a user identity handler used to handle request for user identity resource.
 type UserIdentityController struct {
-	srv srvv1.Service
+	srv consolesrv.Service
 }
 
 // NewUserIdentityController creates a user identity handler.
 func NewUserIdentityController(depsIns *deps.Dependencies) *UserIdentityController {
 	return &UserIdentityController{
-		srv: srvv1.NewService(depsIns),
+		srv: consolesrv.NewService(depsIns),
 	}
 }

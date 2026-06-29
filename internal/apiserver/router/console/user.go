@@ -4,7 +4,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	userv1 "llmops/internal/apiserver/controller/v1/user"
+	userv1 "llmops/internal/apiserver/controller/v1/console/user"
 	"llmops/internal/apiserver/deps"
 )
 
@@ -16,6 +16,7 @@ func RegisterUserRoutes(depsIns *deps.Dependencies, g *gin.Engine, v *gin.Router
 
 	users := v.Group("/users")
 
+	users.GET("/me", userController.Get)
 	users.POST("", userController.Create)
 
 }

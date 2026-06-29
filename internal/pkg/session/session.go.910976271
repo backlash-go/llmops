@@ -22,16 +22,16 @@ const (
 
 // Data is the server-side session payload stored in Redis.
 type Data struct {
-	UserID     uint64   `json:"user_id"`
-	IdentityID uint64   `json:"identity_id"`
-	Username   string   `json:"username"`
-	Email      string   `json:"email"`
-	Provider   string   `json:"provider"`
-	Issuer     string   `json:"issuer"`
-	Subject    string   `json:"subject"`
+	UserID     uint64 `json:"user_id"`
+	IdentityID uint64 `json:"identity_id"`
+	Username   string `json:"username"`
+	Email      string `json:"email"`
+	Provider   string `json:"provider"`
+	Issuer     string `json:"issuer"`
+	Subject    string `json:"subject"`
 	Roles      []string `json:"roles"`
-	CreatedAt  int64    `json:"created_at"`
-	ExpiresAt  int64    `json:"expires_at"`
+	CreatedAt  int64  `json:"created_at"`
+	ExpiresAt  int64  `json:"expires_at"`
 }
 
 // Key returns the Redis key for a session ID.

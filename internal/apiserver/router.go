@@ -13,7 +13,7 @@ import (
 	"llmops/internal/pkg/code"
 	"llmops/internal/pkg/middleware"
 
-	"llmops/internal/apiserver/router"
+	consolerouter "llmops/internal/apiserver/router/console"
 
 	// custom gin validators.
 	_ "llmops/pkg/validator"
@@ -39,11 +39,15 @@ func installController(g *gin.Engine, depsIns *deps.Dependencies) *gin.Engine {
 	})
 
 	v1 := g.Group("/ops/api/v1")
-	v1.Use(middleware.CookieSession(depsIns.Redis))
+	consolerouter.RegisterUserAIAPIKeyHigressRoutes(depsIns, v1)
 
-	router.RegisterUserRoutes(depsIns, g, v1)
+	privateV1 := g.Group("/ops/api/v1")
+	privateV1.Use(middleware.CookieSession(depsIns.Redis))
 
-	router.RegisterUserIdentityRoutes(depsIns, v1)
+	consolerouter.RegisterUserRoutes(depsIns, g, privateV1)
+
+	consolerouter.RegisterUserIdentityRoutes(depsIns, privateV1)
+	consolerouter.RegisterUserAIAPIKeyRoutes(depsIns, privateV1)
 
 	return g
 }

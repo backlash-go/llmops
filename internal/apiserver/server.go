@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	"llmops/internal/apiserver/config"
-	cachev1 "llmops/internal/apiserver/controller/v1/cache"
-	userv1 "llmops/internal/apiserver/controller/v1/user"
+	cachev1 "llmops/internal/apiserver/controller/v1/console/cache"
+	userv1 "llmops/internal/apiserver/controller/v1/console/user"
 	"llmops/internal/apiserver/deps"
 	"llmops/internal/apiserver/store/mysql"
 	"llmops/internal/apiserver/store/redis"

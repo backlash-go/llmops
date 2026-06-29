@@ -21,18 +21,27 @@ func (u *UserController) Create(c *gin.Context) {
 	var r v1.CreateUserRequest
 
 	if err := c.ShouldBindJSON(&r); err != nil {
+
 		core.WriteResponse(c, errors.WithCode(code.ErrBind, err.Error()), nil)
 
 		return
 	}
 
 	if r.Username == "" || r.Email == "" {
+
+	   log.L(c).Errorf("controller u.srv.User().Create: %v","Username = '' Email = ''")
+
+
 		core.WriteResponse(c, errors.WithCode(code.ErrValidation, "username and email are required"), nil)
 		return
 	}
 
 	// Insert the user to the storage.
 	if err := u.srv.User().Create(c, &r); err != nil {
+
+		log.L(c).Errorf("controller u.srv.User().Create: %v", err)
+
+
 		core.WriteResponse(c, err, nil)
 
 		return

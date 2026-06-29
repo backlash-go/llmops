@@ -43,7 +43,7 @@ func applyOAuthUserProfile(user *model.User, r *apiv1.OAuthLoginRequest) bool {
 	return changed
 }
 
-func oauthLoginResponse(user *model.User, identity *model.UserIdentity, created bool) *apiv1.OAuthLoginResponse {
+func oauthLoginResponse(user *model.User, identity *model.UserIdentity, roles []string, created bool) *apiv1.OAuthLoginResponse {
 	return &apiv1.OAuthLoginResponse{
 		UserID:      user.ID,
 		IdentityID:  identity.ID,
@@ -52,7 +52,27 @@ func oauthLoginResponse(user *model.User, identity *model.UserIdentity, created 
 		Provider:    identity.Provider,
 		Issuer:      identity.Issuer,
 		Subject:     identity.Subject,
+		Roles:       roles,
 		Created:     created,
 		LastLoginAt: user.LastLoginAt,
+	}
+}
+
+func userResponseFromModel(user *model.User) *apiv1.UserResponse {
+	if user == nil {
+		return nil
+	}
+
+	return &apiv1.UserResponse{
+		ID:          user.ID,
+		Username:    user.Username,
+		Email:       user.Email,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Avatar:      user.Avatar,
+		Status:      user.Status,
+		LastLoginAt: user.LastLoginAt,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
 	}
 }

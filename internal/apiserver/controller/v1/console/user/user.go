@@ -6,17 +6,17 @@ package user
 
 import (
 	"llmops/internal/apiserver/deps"
-	srvv1 "llmops/internal/apiserver/service/v1"
+	consolesrv "llmops/internal/apiserver/service/v1/console"
 )
 
 // UserController create a user handler used to handle request for user resource.
 type UserController struct {
-	srv srvv1.Service
+	srv consolesrv.Service
 }
 
 // NewUserController creates a user handler.
 func NewUserController(depsIns *deps.Dependencies) *UserController {
 	return &UserController{
-		srv: srvv1.NewService(depsIns),
+		srv: consolesrv.NewService(depsIns),
 	}
 }

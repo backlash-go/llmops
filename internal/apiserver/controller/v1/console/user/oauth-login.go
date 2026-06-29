@@ -83,7 +83,7 @@ func (u *UserController) startOAuthAuthorization(c *gin.Context) {
 
 	state, err := generateState()
 	if err != nil {
-		log.L(c).Warnf("generate OAuth state failed: %v", err)
+		log.L(c).Errorf("generate OAuth state failed: %v", err)
 		core.WriteResponse(c, errors.WithCode(code.ErrUnknown, "generate OAuth state failed"), nil)
 
 		return
@@ -104,7 +104,7 @@ func (u *UserController) startOAuthAuthorization(c *gin.Context) {
 
 	authorizationURL, err := buildAuthorizationURL(config, state)
 	if err != nil {
-		log.L(c).Warnf("build OAuth authorization URL failed: %v", err)
+		log.L(c).Errorf("build OAuth authorization URL failed: %v", err)
 		deleteStateCookie(c, config.CookieSecure)
 		core.WriteResponse(c, errors.WithCode(code.ErrUnknown, err.Error()), nil)
 
@@ -177,7 +177,7 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 
 	loginRequest, err := oauthLoginRequestFromClaims(claims)
 	if err != nil {
-		log.L(c).Warnf("build OAuth login request failed: %v", err)
+		log.L(c).Errorf("build OAuth login request failed: %v", err)
 		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
@@ -186,7 +186,7 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 	loginResponse, err := u.srv.User().OauthLogin(c.Request.Context(), loginRequest)
 	if err != nil {
 
-		log.L(c).Errorw("u.srv.User().OauthLogin failed: %v", err)
+		log.L(c).Errorw("UserController.OauthLogin failed", "error", err)
 
 		core.WriteResponse(c, err, nil)
 
@@ -219,6 +219,7 @@ func oauthLoginRequestFromClaims(claims map[string]interface{}) (*apiv1.OAuthLog
 		LastName:          claimString(claims, "family_name"),
 		DisplayName:       claimString(claims, "name"),
 		Avatar:            claimString(claims, "picture"),
+		Roles:             claimStringSlice(claims, "roles"),
 	}, nil
 }
 
@@ -226,4 +227,30 @@ func claimString(claims map[string]interface{}, name string) string {
 	value, _ := claims[name].(string)
 
 	return value
+}
+
+func claimStringSlice(claims map[string]interface{}, name string) []string {
+	value, ok := claims[name]
+	if !ok {
+		return []string{}
+	}
+
+	items, ok := value.([]interface{})
+	if !ok {
+		stringItems, ok := value.([]string)
+		if !ok {
+			return []string{}
+		}
+
+		return stringItems
+	}
+
+	values := make([]string, 0, len(items))
+	for _, item := range items {
+		if value, ok := item.(string); ok {
+			values = append(values, value)
+		}
+	}
+
+	return values
 }

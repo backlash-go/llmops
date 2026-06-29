@@ -4,7 +4,7 @@
 
 本文定义本项目后续开发应遵守的通用架构规则，覆盖 HTTP API、配置初始化、中间件、认证登录、业务分层、数据访问、错误处理和编码约定。
 
-新增业务能力时优先保持以下调用链：
+- 新增业务能力时优先保持以下调用链：
 
 ```text
 Command/App → Options/Config → Server → Router → Controller → Service → Store → Database/External System  API DTO   ↘ Model
@@ -69,7 +69,7 @@ Router → Controller → Service → Store → MySQL
 
 各层职责：
 
-- Router：只注册路径、HTTP 方法和 Controller，不读取数据库，不处理业务逻辑。
+- Router：只注册路径、HTTP 方法和 Controller，不读取数据库，不处理业务逻辑 
 - Controller：绑定请求、触发参数校验、调用 Service、统一写响应。
 - Service：执行业务规则、DTO/Model 转换、调用 Store、映射业务错误。
 - Store：只负责持久化或读取数据，透传底层错误，不构造 HTTP 响应。
@@ -92,6 +92,8 @@ internal/pkg/model/<resource>.go
 - REST 资源路径使用复数、小写、短横线风格。
 - API 版本前缀由上层统一提供 `/ops/api/v1`。
 - 登录、回调、健康检查、metrics 等非资源路径可以独立注册，但仍应保持在相关资源的controller下。
+- 资源删除 delete 用post 方法 路由结尾是  资源 /batch-delete   删除单个或者多个都用这个
+
 
 ## DTO 与 Model 规则
 
@@ -190,6 +192,5 @@ Store 只负责数据访问：
 - 导出类型、导出方法应有完整注释。
 - 不忽略可能失败的错误。若确实忽略，必须写明原因。
 - 例如 service/v1/user 下如果 逻辑太多可以 在对应目录下创建一个Helper.go 文件
-
 
 

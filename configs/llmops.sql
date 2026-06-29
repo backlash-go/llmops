@@ -51,3 +51,23 @@ CREATE TABLE `user_identity` (
   UNIQUE KEY `uk_provider_subject` (`provider`,`issuer`,`subject`),
   KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;;
+
+
+CREATE TABLE `user_ai_api_key` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned NOT NULL COMMENT '本地用户ID',
+  `name` varchar(64) NOT NULL COMMENT 'API Key名称',
+  `api_key_hash` varchar(255) NOT NULL COMMENT 'API Key哈希值',
+  `api_key_prefix` varchar(32) NOT NULL DEFAULT '' COMMENT 'API Key前缀,用于快速定位',
+  `api_key_last4` varchar(16) NOT NULL DEFAULT '' COMMENT 'API Key尾号,用于展示',
+  `status` tinyint unsigned NOT NULL DEFAULT 1 COMMENT '状态:1启用 2禁用',
+  `expires_at` datetime DEFAULT NULL COMMENT '过期时间',
+  `last_used_at` datetime DEFAULT NULL COMMENT '最后使用时间',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` datetime DEFAULT NULL COMMENT '删除时间',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `uk_api_key_hash` (`api_key_hash`),
+  KEY `idx_api_key_prefix` (`api_key_prefix`),
+  KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

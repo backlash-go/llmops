@@ -25,6 +25,7 @@ import (
 // UserSrv defines functions used to handle user request.
 type UserSrv interface {
 	Create(ctx context.Context, r *apiv1.CreateUserRequest) error
+	Get(ctx context.Context, r *apiv1.GetUserRequest) (*apiv1.UserResponse, error)
 	OauthLogin(ctx context.Context, r *apiv1.OAuthLoginRequest) (*apiv1.OAuthLoginResponse, error)
 }
 
@@ -56,6 +57,24 @@ func (u *userService) Create(ctx context.Context, r *apiv1.CreateUserRequest) er
 	}
 
 	return nil
+}
+
+// Get returns the current user.
+func (u *userService) Get(ctx context.Context, r *apiv1.GetUserRequest) (*apiv1.UserResponse, error) {
+	if r == nil || r.UserID == 0 {
+		return nil, errors.WithCode(code.ErrValidation, "user id is required")
+	}
+
+	user, err := u.deps.MySQL.User().Get(ctx, &model.User{ID: r.UserID})
+	if err != nil {
+		if stderrors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.WithCode(code.ErrUserNotFound, err.Error())
+		}
+
+		return nil, errors.WithCode(code.ErrDatabase, err.Error())
+	}
+
+	return userResponseFromModel(user), nil
 }
 
 // OauthLogin creates or updates the local user binding after OAuth token validation.
@@ -122,7 +141,7 @@ func (u *userService) updateOAuthUser(
 		}
 	}
 
-	return oauthLoginResponse(user, identity, false), nil
+	return oauthLoginResponse(user, identity, r.Roles, false), nil
 }
 
 func (u *userService) createOAuthUser(ctx context.Context, r *apiv1.OAuthLoginRequest) (*apiv1.OAuthLoginResponse, error) {
@@ -155,7 +174,7 @@ func (u *userService) createOAuthUser(ctx context.Context, r *apiv1.OAuthLoginRe
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
 	}
 
-	return oauthLoginResponse(user, identity, true), nil
+	return oauthLoginResponse(user, identity, r.Roles, true), nil
 }
 
 func (u *userService) createSession(ctx context.Context, resp *apiv1.OAuthLoginResponse) (*apiv1.OAuthLoginResponse, error) {
@@ -183,6 +202,7 @@ func (u *userService) createSession(ctx context.Context, resp *apiv1.OAuthLoginR
 		Provider:   resp.Provider,
 		Issuer:     resp.Issuer,
 		Subject:    resp.Subject,
+		Roles:      resp.Roles,
 		CreatedAt:  now.Unix(),
 		ExpiresAt:  now.Add(session.DefaultTTL).Unix(),
 	}

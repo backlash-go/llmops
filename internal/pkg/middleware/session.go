@@ -66,6 +66,7 @@ func CookieSession(store redis.RStore) gin.HandlerFunc {
 		c.Set(SessionIDKey, sessionID)
 		c.Set(UserIDKey, data.UserID)
 		c.Set(UsernameKey, data.Username)
+		c.Set(RolesKey, data.Roles)
 		c.Next()
 	}
 }

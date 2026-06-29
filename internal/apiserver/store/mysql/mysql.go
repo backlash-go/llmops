@@ -34,6 +34,10 @@ func (ds *datastore) UserIdentity() UserIdentityStore {
 	return newUserIdentity(ds)
 }
 
+func (ds *datastore) UserAIAPIKey() UserAIAPIKeyStore {
+	return newUserAIAPIKey(ds)
+}
+
 func (ds *datastore) Close() error {
 	db, err := ds.db.DB()
 	if err != nil {
@@ -87,7 +91,7 @@ func GetMySQLFactoryOr(opts *genericoptions.MySQLOptions) (Factory, error) {
 // cleanDatabase tear downs the database tables.
 // nolint:unused // may be reused in the feature, or just show a migrate usage.
 func cleanDatabase(db *gorm.DB) error {
-	if err := db.Migrator().DropTable(&model.User{}, &model.UserIdentity{}); err != nil {
+	if err := db.Migrator().DropTable(&model.User{}, &model.UserIdentity{}, &model.UserAIAPIKey{}); err != nil {
 		return errors.Wrap(err, "drop user table failed")
 	}
 	if err := db.Migrator().DropTable(&v1.Policy{}); err != nil {
@@ -104,7 +108,7 @@ func cleanDatabase(db *gorm.DB) error {
 // won't delete/change current data.
 // nolint:unused // may be reused in the feature, or just show a migrate usage.
 func migrateDatabase(db *gorm.DB) error {
-	if err := db.AutoMigrate(&model.User{}, &model.UserIdentity{}); err != nil {
+	if err := db.AutoMigrate(&model.User{}, &model.UserIdentity{}, &model.UserAIAPIKey{}); err != nil {
 		return errors.Wrap(err, "migrate user model failed")
 	}
 	if err := db.AutoMigrate(&v1.Policy{}); err != nil {

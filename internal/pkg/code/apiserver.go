@@ -13,6 +13,10 @@ const (
 
 	// ErrUserAlreadyExist - 400: User already exist.
 	ErrUserAlreadyExist
+
+	ErrUserNeedToLogin
+
+	ErrUserPermissionDeny
 )
 
 // llmops-apiserver: secret errors.

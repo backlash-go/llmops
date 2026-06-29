@@ -2,20 +2,22 @@
 // Use of this source code is governed by a MIT style
 // license that can be found in the LICENSE file.
 
-package v1
+package console
 
-//go:generate mockgen -self_package=llmops/internal/apiserver/service/v1 -destination mock_service.go -package v1 llmops/internal/apiserver/service/v1 Service
+//go:generate mockgen -self_package=llmops/internal/apiserver/service/v1/console -destination mock_service.go -package console llmops/internal/apiserver/service/v1/console Service
 
 import (
 	"llmops/internal/apiserver/deps"
-	"llmops/internal/apiserver/service/v1/user"
-	useridentity "llmops/internal/apiserver/service/v1/user_identity"
+	"llmops/internal/apiserver/service/v1/console/user"
+	useraiapikey "llmops/internal/apiserver/service/v1/console/user_ai_api_key"
+	useridentity "llmops/internal/apiserver/service/v1/console/user_identity"
 )
 
 // Service defines functions used to return resource interface.
 type Service interface {
 	User() user.UserSrv
 	UserIdentity() useridentity.UserIdentitySrv
+	UserAIAPIKey() useraiapikey.UserAIAPIKeySrv
 }
 
 type service struct {
@@ -35,4 +37,8 @@ func (s *service) User() user.UserSrv {
 
 func (s *service) UserIdentity() useridentity.UserIdentitySrv {
 	return useridentity.NewUserIdentity(s.deps.MySQL)
+}
+
+func (s *service) UserAIAPIKey() useraiapikey.UserAIAPIKeySrv {
+	return useraiapikey.NewUserAIAPIKey(s.deps)
 }
