@@ -1,0 +1,3 @@
+rg: $(go: 系统找不到指定的文件。 (os error 2)
+rg: env: 系统找不到指定的文件。 (os error 2)
+rg: GOPATH: 系统找不到指定的文件。 (os error 2)

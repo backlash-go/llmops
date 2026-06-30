@@ -14,6 +14,7 @@ import (
 	"llmops/internal/apiserver/store/redis"
 	"llmops/internal/pkg/code"
 	"llmops/internal/pkg/session"
+	"llmops/pkg/log"
 )
 
 // CookieSession authenticates API requests with the server-side browser session.
@@ -28,7 +29,7 @@ func CookieSession(store redis.RStore) gin.HandlerFunc {
 
 		sessionID, err := c.Cookie(session.CookieName)
 		if err != nil || strings.TrimSpace(sessionID) == "" {
-			core.WriteResponse(c, errors.WithCode(code.ErrMissingHeader, "session cookie cannot be empty."), nil)
+			core.WriteResponse(c, errors.WithCode(code.ErrUnauthenticated, "session cookie cannot be empty."), nil)
 			c.Abort()
 
 			return
@@ -67,6 +68,16 @@ func CookieSession(store redis.RStore) gin.HandlerFunc {
 		c.Set(UserIDKey, data.UserID)
 		c.Set(UsernameKey, data.Username)
 		c.Set(RolesKey, data.Roles)
+		
+		c.Set(log.KeyUsername, c.GetString(UsernameKey))
+
+
+		log.L(c).Infow("CookieSession set session context",
+			SessionIDKey, sessionID,
+			UserIDKey, data.UserID,
+			UsernameKey, data.Username,
+			RolesKey, data.Roles,
+		)
 		c.Next()
 	}
 }

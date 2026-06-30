@@ -18,6 +18,7 @@ type User struct {
 	Email       string         `gorm:"column:email;type:varchar(255);not null;uniqueIndex:uk_email" json:"email"`
 	FirstName   string         `gorm:"column:first_name;type:varchar(64);not null;default:''" json:"first_name"`
 	LastName    string         `gorm:"column:last_name;type:varchar(64);not null;default:''" json:"last_name"`
+	DisplayName string         `gorm:"column:display_name;type:varchar(128);not null;default:''" json:"display_name"`
 	Avatar      string         `gorm:"column:avatar;type:varchar(255);not null;default:''" json:"avatar"`
 	Status      uint8          `gorm:"column:status;type:tinyint unsigned;not null;default:1" json:"status"`
 	LastLoginAt *time.Time     `gorm:"column:last_login_at;type:datetime" json:"last_login_at,omitempty"`

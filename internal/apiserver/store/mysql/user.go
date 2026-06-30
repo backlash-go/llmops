@@ -42,5 +42,6 @@ func (u *user) Get(ctx context.Context, user *model.User) (*model.User, error) {
 
 // Update updates a user account.
 func (u *user) Update(ctx context.Context, user *model.User) error {
-	return u.db.WithContext(ctx).Save(user).Error
+	return u.db.WithContext(ctx).
+		Updates(user).Error
 }

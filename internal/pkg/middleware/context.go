@@ -26,7 +26,7 @@ const RolesKey = "roles"
 func Context() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set(log.KeyRequestID, c.GetString(XRequestIDKey))
-		c.Set(log.KeyUsername, c.GetString(UsernameKey))
+		// c.Set(log.KeyUsername, c.GetString(UsernameKey))
 		c.Next()
 	}
 }

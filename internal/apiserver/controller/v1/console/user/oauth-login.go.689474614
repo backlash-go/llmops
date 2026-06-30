@@ -3,12 +3,13 @@ package user
 import (
 	"crypto/subtle"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/marmotedu/component-base/pkg/core"
+	"github.com/marmotedu/errors"
 
-	"llmops/internal/pkg/middleware"
+	"llmops/internal/pkg/code"
 	"llmops/internal/pkg/session"
 	apiv1 "llmops/pkg/api/llmops/v1"
 	"llmops/pkg/log"
@@ -16,9 +17,8 @@ import (
 
 const (
 	// GenericOAuthPath is the Keycloak authorization callback path.
-	GenericOAuthPath     = "/ops/api/v1/login/generic_oauth"
+	GenericOAuthPath     = "/ops/login/generic_oauth"
 	oauthStateCookieName = "llmops_oauth_state"
-	oauthLoginErrorMsg   = "登录认证失败，请联系管理员并提供请求ID"
 	oauthStateBytes      = 32
 )
 
@@ -58,26 +58,14 @@ func (u *UserController) OauthLogin(c *gin.Context) {
 	}
 
 	if queryState == "" || authorizationCode == "" || oauthError != "" {
-		cookieState, cookieErr := c.Cookie(oauthStateCookieName)
 		log.L(c).Warnf(
 			"invalid OAuth callback request: has_state=%t has_code=%t error=%s",
 			queryState != "",
 			authorizationCode != "",
 			oauthError,
 		)
-		log.L(c).Infow(
-			"OAuth callback invalid state values",
-			"url_state", queryState,
-			"url_state_empty", queryState == "",
-			"url_state_len", len(queryState),
-			"cookie_found", cookieErr == nil,
-			"cookie_error", cookieErr,
-			"cookie_state", cookieState,
-			"cookie_state_empty", cookieState == "",
-			"cookie_state_len", len(cookieState),
-		)
 		deleteStateCookie(c, OAuthConfig.CookieSecure)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, "invalid OAuth callback request"), nil)
 
 		return
 	}
@@ -89,7 +77,7 @@ func (u *UserController) startOAuthAuthorization(c *gin.Context) {
 	config := OAuthConfig
 	if err := validateOAuthConfig(config); err != nil {
 		log.L(c).Warnf("OAuth config validation failed: %v", err)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrUnknown, err.Error()), nil)
 
 		return
 	}
@@ -97,7 +85,7 @@ func (u *UserController) startOAuthAuthorization(c *gin.Context) {
 	state, err := generateState()
 	if err != nil {
 		log.L(c).Errorf("generate OAuth state failed: %v", err)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrUnknown, "generate OAuth state failed"), nil)
 
 		return
 	}
@@ -119,7 +107,7 @@ func (u *UserController) startOAuthAuthorization(c *gin.Context) {
 	if err != nil {
 		log.L(c).Errorf("build OAuth authorization URL failed: %v", err)
 		deleteStateCookie(c, config.CookieSecure)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrUnknown, err.Error()), nil)
 
 		return
 	}
@@ -131,41 +119,19 @@ func (u *UserController) startOAuthAuthorization(c *gin.Context) {
 func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authorizationCode string) {
 	config := OAuthConfig
 	cookieState, err := c.Cookie(oauthStateCookieName)
-	log.L(c).Infow(
-		"OAuth callback state check",
-		"cookie_found", err == nil,
-		"url_state", queryState,
-		"cookie_state", cookieState,
+	log.L(c).Infof(
+		"OAuth callback state check: cookie_found=%t query_state_len=%d cookie_state_len=%d",
+		err == nil,
+		len(queryState),
+		len(cookieState),
 	)
-
-
-
-	if err != nil {
-		log.L(c).Warnw("OAuth state validation failed: state cookie missing", "cookie_error", err)
+	if err != nil ||
+		queryState == "" ||
+		subtle.ConstantTimeCompare([]byte(queryState), []byte(cookieState)) != 1 {
+		log.L(c).Warnf("OAuth state validation failed: cookie_error=%v", err)
 		deleteStateCookie(c, config.CookieSecure)
 
-		redirectOAuthLoginError(c)
-
-		return
-	}
-
-	if cookieState == "" {
-		log.L(c).Warnw("OAuth state validation failed: cookie state is empty")
-		deleteStateCookie(c, config.CookieSecure)
-
-		redirectOAuthLoginError(c)
-
-		return
-	}
-
-	if subtle.ConstantTimeCompare([]byte(queryState), []byte(cookieState)) != 1 {
-		log.L(c).Warnw("ConstantTimeCompare OAuth state validation failed: state mismatch",
-			"url_state", queryState,
-			"cookie_state", cookieState,
-		)
-		deleteStateCookie(c, config.CookieSecure)
-
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, "invalid or expired OAuth state"), nil)
 
 		return
 	}
@@ -175,7 +141,7 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 
 	if err := validateOAuthIssuer(c.Query("iss"), config.AuthorizationEndpoint); err != nil {
 		log.L(c).Warnf("OAuth issuer validation failed: %v", err)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
 	}
@@ -184,10 +150,11 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 	tokenResponse, err := exchangeOAuthCode(c.Request.Context(), config, authorizationCode)
 	if err != nil {
 		log.L(c).Errorf("OAuth code exchange exchangeOAuthCode failed: %v", err)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
 	}
+
 
 	log.L(c).Infof(
 		"OAuth code exchanged: token_type=%s expires_in=%d has_access_token=%t has_id_token=%t has_refresh_token=%t",
@@ -201,7 +168,7 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 	claims, err := validateIDToken(c.Request.Context(), config, tokenResponse.IDToken)
 	if err != nil {
 		log.L(c).Errorf("OAuth id_token validateIDToken failed: %v", err)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
 	}
@@ -213,7 +180,7 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 	loginRequest, err := oauthLoginRequestFromClaims(claims)
 	if err != nil {
 		log.L(c).Errorf("build OAuth login request failed: %v", err)
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, errors.WithCode(code.ErrValidation, err.Error()), nil)
 
 		return
 	}
@@ -223,18 +190,19 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 
 		log.L(c).Errorw("UserController.OauthLogin failed", "error", err)
 
-		redirectOAuthLoginError(c)
+		core.WriteResponse(c, err, nil)
 
 		return
 	}
 
+
 	log.L(c).Infow("UserController.handleOAuthCallback OAuth login request built",
-		"provider", loginRequest.Provider,
-		"issuer", loginRequest.Issuer,
-		"subject", loginRequest.Subject,
-		"preferred_username", loginRequest.PreferredUsername,
-		"email", loginRequest.Email,
-		"roles", loginRequest.Roles)
+    "provider", loginRequest.Provider,
+    "issuer", loginRequest.Issuer,
+    "subject", loginRequest.Subject,
+    "preferred_username", loginRequest.PreferredUsername,
+    "email", loginRequest.Email,
+    "roles", loginRequest.Roles)
 
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
@@ -249,29 +217,6 @@ func (u *UserController) handleOAuthCallback(c *gin.Context, queryState, authori
 	log.L(c).Infof("OAuth session cookie set: max_age=%d path=%s secure=%t", loginResponse.SessionMaxAge, session.CookiePath, config.CookieSecure)
 
 	c.Redirect(http.StatusFound, session.FrontendPath)
-}
-
-func redirectOAuthLoginError(c *gin.Context) {
-	redirectURL := url.URL{Path: session.FrontendPath}
-	query := redirectURL.Query()
-	query.Set("llmops_error", oauthLoginErrorMsg)
-	if requestID := oauthRequestID(c); requestID != "" {
-		query.Set("request_id", requestID)
-	}
-	redirectURL.RawQuery = query.Encode()
-
-	c.Redirect(http.StatusFound, redirectURL.String())
-}
-
-func oauthRequestID(c *gin.Context) string {
-	if requestID := c.GetHeader(middleware.XRequestIDKey); requestID != "" {
-		return requestID
-	}
-	if requestID := c.GetString(middleware.XRequestIDKey); requestID != "" {
-		return requestID
-	}
-
-	return ""
 }
 
 func oauthLoginRequestFromClaims(claims map[string]interface{}) (*apiv1.OAuthLoginRequest, error) {

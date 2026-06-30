@@ -7,12 +7,13 @@ import (
 )
 
 type CreateUserRequest struct {
-	Username  string `json:"username" binding:"required"`
-	Email     string `json:"email" binding:"required,email"`
-	Password  string `json:"password" binding:"required,min=8,max=32"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Avatar    string `json:"avatar"`
+	Username    string `json:"username" binding:"required"`
+	Email       string `json:"email" binding:"required,email"`
+	Password    string `json:"password" binding:"required,min=8,max=32"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	DisplayName string `json:"display_name"`
+	Avatar      string `json:"avatar"`
 }
 
 type UpdateUserRequest struct{}
@@ -51,6 +52,7 @@ type OAuthLoginResponse struct {
 	IdentityID    uint64     `json:"identity_id"`
 	Username      string     `json:"username"`
 	Email         string     `json:"email"`
+	DisplayName   string     `json:"display_name"`
 	Provider      string     `json:"provider"`
 	Issuer        string     `json:"issuer"`
 	Subject       string     `json:"subject"`
@@ -68,6 +70,7 @@ type UserResponse struct {
 	Email       string     `json:"email"`
 	FirstName   string     `json:"first_name"`
 	LastName    string     `json:"last_name"`
+	DisplayName string     `json:"display_name"`
 	Avatar      string     `json:"avatar"`
 	Status      uint8      `json:"status"`
 	LastLoginAt *time.Time `json:"last_login_at,omitempty"`

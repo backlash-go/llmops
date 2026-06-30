@@ -39,6 +39,10 @@ func applyOAuthUserProfile(user *model.User, r *apiv1.OAuthLoginRequest) bool {
 		user.LastName = lastName
 		changed = true
 	}
+	if displayName := oauthDisplayName(r); user.DisplayName != displayName {
+		user.DisplayName = displayName
+		changed = true
+	}
 
 	return changed
 }
@@ -49,6 +53,7 @@ func oauthLoginResponse(user *model.User, identity *model.UserIdentity, roles []
 		IdentityID:  identity.ID,
 		Username:    user.Username,
 		Email:       user.Email,
+		DisplayName: user.DisplayName,
 		Provider:    identity.Provider,
 		Issuer:      identity.Issuer,
 		Subject:     identity.Subject,
@@ -69,6 +74,7 @@ func userResponseFromModel(user *model.User) *apiv1.UserResponse {
 		Email:       user.Email,
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
+		DisplayName: user.DisplayName,
 		Avatar:      user.Avatar,
 		Status:      user.Status,
 		LastLoginAt: user.LastLoginAt,

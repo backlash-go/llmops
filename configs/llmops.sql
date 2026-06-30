@@ -25,6 +25,7 @@ CREATE TABLE `user` (
   `email` varchar(255) NOT NULL COMMENT '邮箱',
   `first_name` varchar(64) NOT NULL DEFAULT '' COMMENT '名',
   `last_name` varchar(64) NOT NULL DEFAULT '' COMMENT '姓',
+  `display_name` varchar(128) NOT NULL DEFAULT '' COMMENT '展示名',
   `avatar` varchar(255) NOT NULL DEFAULT '' COMMENT '头像',
   `status` tinyint unsigned NOT NULL DEFAULT 1 COMMENT '状态:1正常 2禁用',
   `last_login_at` datetime DEFAULT NULL COMMENT '最后登录时间',

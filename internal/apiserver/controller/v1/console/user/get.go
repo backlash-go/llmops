@@ -21,21 +21,15 @@ func (u *UserController) Get(c *gin.Context) {
 
 	userID, ok := currentUserID(c)
 	if !ok || userID == 0 {
-
-	    log.L(c).Errorf("UserController.currentUserID  user auth session fail.")
-
-
-		core.WriteResponse(c, errors.WithCode(code.ErrPermissionDenied, "user id is missing from session"), nil)
+		log.L(c).Errorf("UserController.currentUserID  user auth session fail.")
+		core.WriteResponse(c, errors.WithCode(code.ErrUnauthenticated, "user id is missing from session"), nil)
 
 		return
 	}
 
 	resp, err := u.srv.User().Get(c, &apiv1.GetUserRequest{UserID: userID})
 	if err != nil {
-
-		log.L(c).Errorf("UserController.u.srv.User().Get  fail.",err)
-
-
+		log.L(c).Errorf("UserController.u.srv.User().Get fail: %v", err)
 		core.WriteResponse(c, err, nil)
 
 		return

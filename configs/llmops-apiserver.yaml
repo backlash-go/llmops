@@ -66,7 +66,7 @@ oauth:
   authorization-endpoint: https://smart-auto.luxshare-ict.com/keycloak/realms/xmit-luxshare/protocol/openid-connect/auth
   client-id: xmit-llmops
   client-secret: "P3V4iDzBXvi7qNuIe0LDFyxHVfMQd9VD" # confidential client 填写；public client 保持空
-  redirect-uri: http://127.0.0.1:8080/ops/login/generic_oauth
+  redirect-uri: http://127.0.0.1:9285/ops/api/v1/login/generic_oauth
   scopes: openid,profile,email,roles
   state-ttl: 5m
   cookie-secure: false # 本地 HTTP 调试时改为 false true

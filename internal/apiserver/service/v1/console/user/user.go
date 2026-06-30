@@ -132,7 +132,16 @@ func (u *userService) updateOAuthUser(
 	}
 
 	if applyOAuthUserProfile(user, r) {
-		if err := u.deps.MySQL.User().Update(ctx, user); err != nil {
+        
+		updateUser := &model.User{}
+		updateUser.DisplayName =  r.DisplayName
+		updateUser.Email = r.Email
+		updateUser.FirstName = r.FirstName
+        updateUser.LastName = r.LastName
+		updateUser.ID = user.ID
+
+
+		if err := u.deps.MySQL.User().Update(ctx, updateUser); err != nil {
 			if match, _ := regexp.MatchString("Duplicate entry '.*' for key 'uk_(username|email)'", err.Error()); match {
 				return nil, errors.WithCode(code.ErrUserAlreadyExist, err.Error())
 			}
@@ -157,6 +166,7 @@ func (u *userService) createOAuthUser(ctx context.Context, r *apiv1.OAuthLoginRe
 		Email:       email,
 		FirstName:   strings.TrimSpace(r.FirstName),
 		LastName:    strings.TrimSpace(r.LastName),
+		DisplayName: oauthDisplayName(r),
 		Avatar:      strings.TrimSpace(r.Avatar),
 		Status:      1,
 		LastLoginAt: &now,
@@ -205,6 +215,7 @@ func (u *userService) createSession(ctx context.Context, resp *apiv1.OAuthLoginR
 		Roles:      resp.Roles,
 		CreatedAt:  now.Unix(),
 		ExpiresAt:  now.Add(session.DefaultTTL).Unix(),
+		DisplayName: resp.DisplayName,
 	}
 
 	payload, err := json.Marshal(data)
